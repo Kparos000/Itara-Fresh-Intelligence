@@ -1,0 +1,514 @@
+\# Itara Fresh Intelligence
+
+
+
+Itara Fresh Intelligence is an operations-first, compute-aware agentic replenishment intelligence system for reducing grocery spoilage, stockouts, and AI inference cost.
+
+
+
+The system simulates a fresh grocery network, forecasts demand, detects operational risk, coordinates warehouse-first replenishment, handles rare store-transfer exceptions, triggers network-level supplier procurement, verifies high-impact decisions against policy, and records decision traces for auditability.
+
+
+
+\---
+
+
+
+\## Core idea
+
+
+
+Perishable grocery loss is not only a forecasting problem. It is a decision-intelligence problem.
+
+
+
+A store can predict demand correctly and still lose money if:
+
+
+
+\- inventory is sitting in the wrong place
+
+\- warehouse allocation is late
+
+\- supplier constraints are ignored
+
+\- markdowns happen too late
+
+\- transfers are overused
+
+\- expensive AI reasoning is used on routine cases
+
+
+
+Itara Fresh Intelligence is designed to solve the full decision chain.
+
+
+
+\---
+
+
+
+\## Operating model
+
+
+
+```text
+
+Suppliers → Main Warehouse / DC → Stores → Customers
+
+
+
+Supplier orders are bulk, network-level decisions.
+
+
+
+Store-level shortages are served by warehouse allocation first.
+
+
+
+Store-to-store transfers are rare exceptions.
+
+
+
+A high-demand store does not automatically trigger a supplier order.
+
+
+
+Project thesis
+
+
+
+The project is built around one core thesis:
+
+
+
+Fresh grocery loss is reduced when forecasting, warehouse allocation, supplier procurement, policy verification, and agentic decisioning are coordinated as one operating system.
+
+
+
+This means the project is not just about predicting demand. It is about deciding:
+
+
+
+what inventory should move
+
+where it should move
+
+when it should move
+
+whether existing warehouse stock can solve the problem
+
+whether a transfer exception is justified
+
+whether supplier procurement is truly needed
+
+whether the decision follows operational policy
+
+whether the expected savings justify the action and AI cost
+
+Network simulation scope
+
+
+
+The simulated Itara Fresh network includes:
+
+
+
+15 Ontario stores
+
+1 central warehouse / distribution centre
+
+multiple suppliers by product category
+
+500 perishable SKUs
+
+8 fresh grocery categories
+
+4-year operating timeline
+
+future planning window up to 6 months
+
+
+
+Store districts:
+
+
+
+Old Toronto
+
+North York
+
+Scarborough
+
+Etobicoke
+
+York
+
+East York
+
+Mississauga
+
+
+
+Product categories:
+
+
+
+produce
+
+dairy
+
+meat
+
+bakery
+
+deli
+
+seafood
+
+prepared foods
+
+floral
+
+Four-year simulation timeline
+
+Year	Mode	Purpose
+
+2022	Baseline operations	Establish first-year loss benchmark
+
+2023	Baseline operations	Show problem growth and strengthen business case
+
+2024	AI intervention starts	Deploy forecasts, risk detection, agent decisions, and policy checks
+
+2025	AI intervention matures	Add learned advisor, token-aware routing, and improved allocation
+
+
+
+The 2024 intervention period includes a realistic soft launch:
+
+
+
+January to March 2024: observe, recommend, and escalate only
+
+April to December 2024: controlled execution with policy verification
+
+2025: mature execution with learned advisor and token-aware routing
+
+Primary business metrics
+
+
+
+The project measures operational value through:
+
+
+
+spoilage loss
+
+stockout lost margin
+
+markdown margin loss
+
+transfer cost
+
+holding cost
+
+AI inference cost
+
+net expected savings
+
+policy compliance rate
+
+escalation rate
+
+store-to-store transfer rate
+
+
+
+Every savings claim must be generated from the simulation and financial loss engine. Final public claims must not be hard-coded.
+
+
+
+Phase roadmap
+
+Operational design, schema, simulation blueprint, and network visualizer skeleton
+
+Four-year event-stream simulator and financial loss engine
+
+Demand forecasting and risk detection
+
+Warehouse allocation, transfer exception, and procurement decision engine
+
+Agentic operations layer with MCP-style tools and RAG
+
+Learned decision advisor, contextual bandit, and token-aware routing
+
+Evals, observability, MLOps, and deployment
+
+Interactive demo, launch narrative, and portfolio packaging
+
+Phase 1 focus
+
+
+
+Phase 1 defines the world before building the agent.
+
+
+
+It includes:
+
+
+
+domain models
+
+entity relationship design
+
+store network
+
+warehouse configuration
+
+supplier model
+
+SKU catalog
+
+logistics constraints
+
+policy skeletons
+
+schema validation
+
+CI/CD foundation
+
+lightweight network visualizer skeleton
+
+
+
+The Phase 1 visualizer is intentionally a skeleton. It starts with static and mock data, then later connects to generated simulation state.
+
+
+
+Map-based network simulator vision
+
+
+
+The map-based simulator is a core product interface.
+
+
+
+The final interface should allow users to:
+
+
+
+select a date
+
+view all stores, warehouse, and suppliers on a map
+
+click a store to inspect inventory and daily action summaries
+
+click the warehouse to inspect available-to-allocate inventory and inbound deliveries
+
+click a supplier to inspect products supplied and next delivery schedule
+
+view inventory risk by store and category
+
+view warehouse allocation flows
+
+view store-to-store transfer exceptions
+
+view supplier procurement warnings
+
+replay agent decisions
+
+inspect policy evidence
+
+inspect expected and actual financial impact
+
+
+
+Phase 1 only builds the visual shell. Later phases attach real simulation and agent data.
+
+
+
+Planned technical architecture
+
+src/itara/              # shared Python package root
+
+src/itara/domain/       # domain entities and schema contracts
+
+src/itara/config/       # config loading and validation
+
+src/itara/geo/          # geospatial utilities, GeoJSON, distance matrix
+
+src/itara/sim/          # event generation, simulation, financial loss engine
+
+src/itara/ops/          # warehouse allocation, transfers, procurement, logistics
+
+src/itara/ml/           # forecasting, features, risk detection
+
+src/itara/rag/          # Qdrant indexing and retrieval
+
+src/itara/agent/        # LangGraph flow, tools, decision traces
+
+src/itara/learning/     # contextual bandit, rewards, learned advisor
+
+src/itara/inference/    # model routing, token/cost logging
+
+src/itara/api/          # FastAPI endpoints
+
+apps/web/               # Next.js demo and map visualizer
+
+reports/                # generated evaluation and business reports
+
+data/config/            # static simulation configuration
+
+data/policies/          # RAG policy documents
+
+data/generated/         # generated datasets and simulation outputs
+
+models/                 # trained model artifacts
+
+Planned technology stack
+
+
+
+Backend and simulation:
+
+
+
+Python
+
+Pydantic
+
+PyYAML
+
+pandas
+
+Polars or DuckDB later for larger generated data
+
+FastAPI later for API endpoints
+
+pytest
+
+ruff
+
+mypy
+
+GitHub Actions
+
+
+
+Frontend and visualizer:
+
+
+
+Next.js
+
+TypeScript
+
+Tailwind CSS
+
+MapLibre GL JS
+
+deck.gl later for advanced map overlays
+
+Turf.js for geospatial calculations
+
+
+
+ML and agentic layers:
+
+
+
+LightGBM for forecasting baseline/production-style tabular model
+
+Qdrant for RAG
+
+LangGraph for agent workflow
+
+contextual bandit for learned decision advice
+
+token-aware routing for inference cost control
+
+
+
+Deployment and observability later:
+
+
+
+Docker Compose
+
+PostgreSQL
+
+Qdrant
+
+MLflow
+
+Prometheus/Grafana or lightweight observability dashboard
+
+Development principles
+
+Operations first, AI second.
+
+Do not build the agent before the operating model is credible.
+
+Do not use supplier procurement for store-level demand spikes.
+
+Use warehouse-first replenishment.
+
+Keep store-to-store transfers rare.
+
+Keep generated data separate from source code.
+
+Keep simulation reproducible with seeds.
+
+Add tests with every meaningful change.
+
+Keep the frontend contract aligned with backend data structures.
+
+Track every decision and every modeled savings claim.
+
+Local development
+
+
+
+The project will use a Python virtual environment.
+
+
+
+Expected setup:
+
+
+
+python -m venv .venv
+
+.\\.venv\\Scripts\\Activate.ps1
+
+python -m pip install --upgrade pip
+
+pip install -e ".\[dev]"
+
+
+
+Expected quality checks:
+
+
+
+ruff format src tests
+
+ruff check src tests
+
+mypy src
+
+pytest -q
+
+
+
+Frontend checks will be added after the apps/web project is created.
+
+
+
+Author
+
+
+
+Kparobor Akpomiemie
+
