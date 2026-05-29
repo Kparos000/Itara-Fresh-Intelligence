@@ -1,0 +1,44 @@
+[project]
+name = "itara-fresh-intelligence"
+version = "0.1.0"
+description = "Operations-first agentic replenishment intelligence for fresh grocery networks."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "Kparobor Akpomiemie" }
+]
+dependencies = [
+  "pydantic>=2.7.0",
+  "pyyaml>=6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2.0",
+  "ruff>=0.4.0",
+  "mypy>=1.10.0",
+  "pre-commit>=3.7.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = "src"
+packages = ["itara"]
