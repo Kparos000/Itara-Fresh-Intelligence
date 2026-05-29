@@ -1,4 +1,4 @@
-suppliers:
+﻿suppliers:
   - supplier_id: supplier_001
     supplier_name: Ontario Greenhouse Produce Co.
     supplier_warehouse_name: Leamington Produce Hub
@@ -67,8 +67,8 @@ suppliers:
   - supplier_id: supplier_006
     supplier_name: Toronto Artisan Bakery Supply
     supplier_warehouse_name: North York Bakery Hub
-    latitude: 43.7615
-    longitude: -79.4111
+    latitude: 43.7700
+    longitude: -79.4130
     categories_supplied: ["bakery"]
     normal_lead_time_days: 1
     emergency_delivery_allowed: true
