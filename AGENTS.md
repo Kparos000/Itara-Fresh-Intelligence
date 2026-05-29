@@ -920,7 +920,118 @@ When reporting back to the user:
 
 \## Current Phase 1 milestone order
 
+---
 
+## Production-ready engineering principles
+
+This project must be written as production-grade software, not as a notebook experiment or throwaway demo.
+
+### Architecture rules
+
+- Use separation of concerns.
+- Keep UI, business logic, data access, simulation logic, and agent orchestration separate.
+- Use layered architecture where appropriate.
+- Domain models should not depend on infrastructure code.
+- Simulation logic should not depend on frontend code.
+- Agent logic should call tools/contracts, not reach directly into unrelated modules.
+- Avoid circular dependencies.
+- Prefer clear module boundaries over large utility files.
+
+Recommended backend layering:
+
+```text
+domain models and contracts
+        ↓
+configuration and validation
+        ↓
+simulation / operations / ML services
+        ↓
+agent tools and orchestration
+        ↓
+API layer
+        ↓
+frontend
+Function and module rules
+One function should do one thing.
+One module should have one clear responsibility.
+Prefer small functions.
+Use guard clauses to avoid deeply nested logic.
+Avoid boolean flag parameters when enums or named functions are clearer.
+Avoid hidden side effects in calculation functions.
+Pure calculation functions should not log, mutate global state, or call external services.
+Do not over-engineer abstractions before the need is real.
+Naming rules
+Use clear, descriptive names.
+Avoid abbreviations like tmp, val, obj, d, or misc.
+Boolean names should start with is_, has_, can_, or should_.
+Constants should use SCREAMING_SNAKE_CASE.
+Function names should describe the action, for example calculate_transfer_cost or load_store_config.
+A function name must not lie. A function named get_* should not mutate data.
+Error handling rules
+Never swallow errors silently.
+Validate inputs at system boundaries.
+Fail fast when data is invalid.
+Use meaningful custom exceptions when the default exception would be unclear.
+Error messages should explain what failed and what value caused the failure when safe to do so.
+Do not expose secrets or sensitive information in errors.
+Security rules
+Never commit secrets.
+Never commit .env.
+Use .env.example for required environment variables.
+Validate all external input.
+Do not log passwords, tokens, API keys, or sensitive personal data.
+Public APIs must eventually include rate limiting, health checks, and safe error responses.
+Use least privilege for external services and credentials.
+Testing rules
+Add tests with every meaningful change.
+Unit-test business logic and deterministic simulation logic.
+Test edge cases, not only happy paths.
+Tests should read like specifications.
+Use integration tests for API endpoints once the API exists.
+Keep tests deterministic by controlling seeds and avoiding live external services in CI.
+Business-critical paths should target strong coverage, with a practical goal of 80%+ coverage later.
+Git and code hygiene rules
+Keep commits atomic.
+One commit should represent one logical change.
+Use clear commit messages.
+Do not commit generated heavy artifacts unless explicitly required.
+Do not commit secrets, credentials, or local environment files.
+Run formatting, linting, type checking, and tests before commit.
+Do not push broken code unless explicitly instructed and clearly documented.
+
+Preferred local checks for backend changes:
+
+ruff format src tests
+ruff check src tests
+mypy src
+pytest -q
+
+Preferred checks for frontend changes once apps/web exists:
+
+npm run lint
+npm run build
+Documentation rules
+Comment the why, not the obvious what.
+Public functions and important contracts should have docstrings.
+README must stay useful for setup, architecture, and running checks.
+Major design decisions should be recorded as ADRs under docs/decisions/.
+If implementation changes the project direction, update AGENTS.md and docs/project_plan.md.
+Observability rules
+Add structured logging when runtime workflows begin.
+Use appropriate log levels.
+Never log sensitive data.
+API services should eventually expose a health endpoint.
+Important operations should eventually report latency, error rate, throughput, and decision counts.
+Agent decisions must be traceable and auditable.
+Performance hygiene rules
+Avoid unbounded loops over large datasets when vectorized or batched operations are appropriate.
+Avoid repeated expensive calculations when cached/generated artifacts are appropriate.
+Do not calculate the distance matrix repeatedly during simulation; generate and reuse it.
+Paginate or chunk large datasets in APIs and reports.
+Keep token-heavy LLM calls away from routine deterministic cases.
+Golden rule
+
+Write code for the person who reads it next. That person is usually the project owner months later under pressure.
 
 1\. \*\*Milestone 1A — Repo foundation\*\*
 
