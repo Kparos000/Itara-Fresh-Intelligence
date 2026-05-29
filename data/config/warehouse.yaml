@@ -1,0 +1,22 @@
+warehouse:
+  warehouse_id: warehouse_001
+  warehouse_name: Itara Central Fresh Distribution Centre
+  latitude: 43.7418
+  longitude: -79.5294
+  average_days_of_cover: 12
+  morning_dispatch_time: "06:00"
+  afternoon_dispatch_time: "13:00"
+  emergency_dispatch_allowed: true
+  emergency_dispatch_fixed_cost: 275.0
+  transfer_max_radius_km: 25.0
+  transfer_fixed_cost: 45.0
+  transfer_cost_per_km: 1.8
+  category_capacity_units:
+    produce: 80000
+    dairy: 60000
+    meat: 50000
+    bakery: 35000
+    deli: 30000
+    seafood: 18000
+    prepared_foods: 25000
+    floral: 12000

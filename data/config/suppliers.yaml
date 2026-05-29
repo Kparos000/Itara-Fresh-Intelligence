@@ -1,0 +1,130 @@
+suppliers:
+  - supplier_id: supplier_001
+    supplier_name: Ontario Greenhouse Produce Co.
+    supplier_warehouse_name: Leamington Produce Hub
+    latitude: 42.0531
+    longitude: -82.5998
+    categories_supplied: ["produce"]
+    normal_lead_time_days: 2
+    emergency_delivery_allowed: true
+    emergency_delivery_fee: 450.0
+    reliability_score: 0.88
+    minimum_order_value: 5000.0
+    normal_delivery_days: ["monday", "wednesday", "friday"]
+
+  - supplier_id: supplier_002
+    supplier_name: Niagara Orchard Network
+    supplier_warehouse_name: Niagara Fresh Aggregation Centre
+    latitude: 43.0896
+    longitude: -79.0849
+    categories_supplied: ["produce"]
+    normal_lead_time_days: 2
+    emergency_delivery_allowed: false
+    emergency_delivery_fee: 0.0
+    reliability_score: 0.84
+    minimum_order_value: 4000.0
+    normal_delivery_days: ["tuesday", "thursday"]
+
+  - supplier_id: supplier_003
+    supplier_name: Golden Horseshoe Dairy
+    supplier_warehouse_name: Guelph Dairy Cold Hub
+    latitude: 43.5448
+    longitude: -80.2482
+    categories_supplied: ["dairy"]
+    normal_lead_time_days: 1
+    emergency_delivery_allowed: true
+    emergency_delivery_fee: 375.0
+    reliability_score: 0.92
+    minimum_order_value: 6000.0
+    normal_delivery_days: ["monday", "tuesday", "thursday", "saturday"]
+
+  - supplier_id: supplier_004
+    supplier_name: Ontario Premium Meats
+    supplier_warehouse_name: Brampton Meat Distribution Hub
+    latitude: 43.7315
+    longitude: -79.7624
+    categories_supplied: ["meat"]
+    normal_lead_time_days: 2
+    emergency_delivery_allowed: true
+    emergency_delivery_fee: 500.0
+    reliability_score: 0.86
+    minimum_order_value: 7000.0
+    normal_delivery_days: ["monday", "wednesday", "friday"]
+
+  - supplier_id: supplier_005
+    supplier_name: Halal Select Meats
+    supplier_warehouse_name: Mississauga Halal Protein Hub
+    latitude: 43.5890
+    longitude: -79.6441
+    categories_supplied: ["meat"]
+    normal_lead_time_days: 2
+    emergency_delivery_allowed: false
+    emergency_delivery_fee: 0.0
+    reliability_score: 0.83
+    minimum_order_value: 5500.0
+    normal_delivery_days: ["tuesday", "thursday"]
+
+  - supplier_id: supplier_006
+    supplier_name: Toronto Artisan Bakery Supply
+    supplier_warehouse_name: North York Bakery Hub
+    latitude: 43.7615
+    longitude: -79.4111
+    categories_supplied: ["bakery"]
+    normal_lead_time_days: 1
+    emergency_delivery_allowed: true
+    emergency_delivery_fee: 250.0
+    reliability_score: 0.90
+    minimum_order_value: 2500.0
+    normal_delivery_days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
+
+  - supplier_id: supplier_007
+    supplier_name: Metro Deli Provisions
+    supplier_warehouse_name: Vaughan Deli Cold Hub
+    latitude: 43.8563
+    longitude: -79.5085
+    categories_supplied: ["deli"]
+    normal_lead_time_days: 2
+    emergency_delivery_allowed: true
+    emergency_delivery_fee: 350.0
+    reliability_score: 0.87
+    minimum_order_value: 4500.0
+    normal_delivery_days: ["monday", "wednesday", "friday"]
+
+  - supplier_id: supplier_008
+    supplier_name: Great Lakes Seafood Supply
+    supplier_warehouse_name: Toronto Seafood Cold Dock
+    latitude: 43.6511
+    longitude: -79.3470
+    categories_supplied: ["seafood"]
+    normal_lead_time_days: 1
+    emergency_delivery_allowed: true
+    emergency_delivery_fee: 600.0
+    reliability_score: 0.82
+    minimum_order_value: 6500.0
+    normal_delivery_days: ["tuesday", "thursday", "saturday"]
+
+  - supplier_id: supplier_009
+    supplier_name: ReadyFresh Prepared Foods
+    supplier_warehouse_name: Etobicoke Prepared Foods Kitchen
+    latitude: 43.6205
+    longitude: -79.5132
+    categories_supplied: ["prepared_foods"]
+    normal_lead_time_days: 1
+    emergency_delivery_allowed: true
+    emergency_delivery_fee: 325.0
+    reliability_score: 0.89
+    minimum_order_value: 3500.0
+    normal_delivery_days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
+
+  - supplier_id: supplier_010
+    supplier_name: Bloom Ontario Floral
+    supplier_warehouse_name: Milton Floral Distribution Hub
+    latitude: 43.5183
+    longitude: -79.8774
+    categories_supplied: ["floral"]
+    normal_lead_time_days: 2
+    emergency_delivery_allowed: false
+    emergency_delivery_fee: 0.0
+    reliability_score: 0.85
+    minimum_order_value: 3000.0
+    normal_delivery_days: ["monday", "thursday"]
