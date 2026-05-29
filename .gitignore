@@ -7,6 +7,12 @@ __pycache__/
 .venv/
 .env
 
+# Python packaging artifacts
+*.egg-info/
+.eggs/
+build/
+dist/
+
 # Node / frontend
 node_modules/
 .next/

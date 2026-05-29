@@ -1,0 +1,255 @@
+stores:
+  - store_id: store_001
+    store_name: King West Fresh
+    district: Old Toronto
+    latitude: 43.6436
+    longitude: -79.4023
+    store_format: large_urban
+    store_persona: young_professionals
+    footfall_index: 1.35
+    price_sensitivity_index: 0.80
+    prepared_foods_affinity: 1.55
+    fresh_produce_affinity: 1.20
+    markdown_response_index: 0.75
+    cold_storage_capacity_units: 14000
+    receiving_window_start: "06:00"
+    receiving_window_end: "11:00"
+    nearest_store_ids: ["store_003", "store_002"]
+
+  - store_id: store_002
+    store_name: Danforth Fresh
+    district: Old Toronto
+    latitude: 43.6773
+    longitude: -79.3527
+    store_format: medium_urban
+    store_persona: mixed_family_residential
+    footfall_index: 1.15
+    price_sensitivity_index: 1.00
+    prepared_foods_affinity: 1.05
+    fresh_produce_affinity: 1.35
+    markdown_response_index: 1.05
+    cold_storage_capacity_units: 11500
+    receiving_window_start: "06:30"
+    receiving_window_end: "11:30"
+    nearest_store_ids: ["store_013", "store_003"]
+
+  - store_id: store_003
+    store_name: Liberty Village Fresh
+    district: Old Toronto
+    latitude: 43.6384
+    longitude: -79.4195
+    store_format: medium_urban
+    store_persona: condo_convenience
+    footfall_index: 1.25
+    price_sensitivity_index: 0.90
+    prepared_foods_affinity: 1.50
+    fresh_produce_affinity: 1.05
+    markdown_response_index: 0.85
+    cold_storage_capacity_units: 12000
+    receiving_window_start: "06:00"
+    receiving_window_end: "11:00"
+    nearest_store_ids: ["store_001", "store_008"]
+
+  - store_id: store_004
+    store_name: Yonge Sheppard Fresh
+    district: North York
+    latitude: 43.7615
+    longitude: -79.4111
+    store_format: large_urban
+    store_persona: transit_hub_professionals
+    footfall_index: 1.30
+    price_sensitivity_index: 0.95
+    prepared_foods_affinity: 1.35
+    fresh_produce_affinity: 1.15
+    markdown_response_index: 0.95
+    cold_storage_capacity_units: 13000
+    receiving_window_start: "06:00"
+    receiving_window_end: "11:30"
+    nearest_store_ids: ["store_005", "store_012"]
+
+  - store_id: store_005
+    store_name: Wilson Fresh
+    district: North York
+    latitude: 43.7377
+    longitude: -79.4526
+    store_format: suburban
+    store_persona: diverse_family_halal
+    footfall_index: 1.05
+    price_sensitivity_index: 1.15
+    prepared_foods_affinity: 0.95
+    fresh_produce_affinity: 1.20
+    markdown_response_index: 1.20
+    cold_storage_capacity_units: 12500
+    receiving_window_start: "06:30"
+    receiving_window_end: "12:00"
+    nearest_store_ids: ["store_011", "store_004"]
+
+  - store_id: store_006
+    store_name: Scarborough Town Centre Fresh
+    district: Scarborough
+    latitude: 43.7764
+    longitude: -79.2579
+    store_format: suburban
+    store_persona: suburban_mall_family
+    footfall_index: 1.30
+    price_sensitivity_index: 1.10
+    prepared_foods_affinity: 1.05
+    fresh_produce_affinity: 1.25
+    markdown_response_index: 1.15
+    cold_storage_capacity_units: 15000
+    receiving_window_start: "07:00"
+    receiving_window_end: "12:30"
+    nearest_store_ids: ["store_007", "store_014"]
+
+  - store_id: store_007
+    store_name: Kingston Eglinton Fresh
+    district: Scarborough
+    latitude: 43.7483
+    longitude: -79.2283
+    store_format: compact_neighbourhood
+    store_persona: east_scarborough_value
+    footfall_index: 0.95
+    price_sensitivity_index: 1.35
+    prepared_foods_affinity: 0.85
+    fresh_produce_affinity: 1.10
+    markdown_response_index: 1.35
+    cold_storage_capacity_units: 9500
+    receiving_window_start: "07:00"
+    receiving_window_end: "12:30"
+    nearest_store_ids: ["store_006", "store_014"]
+
+  - store_id: store_008
+    store_name: Bloor West Fresh
+    district: Etobicoke
+    latitude: 43.6531
+    longitude: -79.4783
+    store_format: medium_urban
+    store_persona: high_income_residential
+    footfall_index: 1.10
+    price_sensitivity_index: 0.75
+    prepared_foods_affinity: 1.20
+    fresh_produce_affinity: 1.35
+    markdown_response_index: 0.75
+    cold_storage_capacity_units: 11500
+    receiving_window_start: "06:30"
+    receiving_window_end: "11:30"
+    nearest_store_ids: ["store_003", "store_009"]
+
+  - store_id: store_009
+    store_name: Kipling Dixon Fresh
+    district: Etobicoke
+    latitude: 43.6984
+    longitude: -79.5370
+    store_format: suburban
+    store_persona: diverse_price_sensitive
+    footfall_index: 1.00
+    price_sensitivity_index: 1.30
+    prepared_foods_affinity: 0.90
+    fresh_produce_affinity: 1.10
+    markdown_response_index: 1.35
+    cold_storage_capacity_units: 11000
+    receiving_window_start: "06:30"
+    receiving_window_end: "12:00"
+    nearest_store_ids: ["store_010", "store_011"]
+
+  - store_id: store_010
+    store_name: Weston Lawrence Fresh
+    district: York
+    latitude: 43.7190
+    longitude: -79.5111
+    store_format: compact_neighbourhood
+    store_persona: working_class_value
+    footfall_index: 0.95
+    price_sensitivity_index: 1.45
+    prepared_foods_affinity: 0.80
+    fresh_produce_affinity: 1.10
+    markdown_response_index: 1.50
+    cold_storage_capacity_units: 9000
+    receiving_window_start: "06:30"
+    receiving_window_end: "12:00"
+    nearest_store_ids: ["store_011", "store_009"]
+
+  - store_id: store_011
+    store_name: Jane Finch Fresh
+    district: York
+    latitude: 43.7604
+    longitude: -79.5102
+    store_format: compact_neighbourhood
+    store_persona: high_volume_basics
+    footfall_index: 1.10
+    price_sensitivity_index: 1.50
+    prepared_foods_affinity: 0.75
+    fresh_produce_affinity: 1.05
+    markdown_response_index: 1.55
+    cold_storage_capacity_units: 10000
+    receiving_window_start: "06:30"
+    receiving_window_end: "12:00"
+    nearest_store_ids: ["store_005", "store_010"]
+
+  - store_id: store_012
+    store_name: Woodbine Danforth Fresh
+    district: East York
+    latitude: 43.6837
+    longitude: -79.3166
+    store_format: medium_urban
+    store_persona: residential_families
+    footfall_index: 1.00
+    price_sensitivity_index: 1.05
+    prepared_foods_affinity: 0.95
+    fresh_produce_affinity: 1.25
+    markdown_response_index: 1.10
+    cold_storage_capacity_units: 10500
+    receiving_window_start: "06:30"
+    receiving_window_end: "11:30"
+    nearest_store_ids: ["store_013", "store_002"]
+
+  - store_id: store_013
+    store_name: Victoria Park OConnor Fresh
+    district: East York
+    latitude: 43.7003
+    longitude: -79.3086
+    store_format: compact_neighbourhood
+    store_persona: older_residential
+    footfall_index: 0.90
+    price_sensitivity_index: 1.20
+    prepared_foods_affinity: 0.80
+    fresh_produce_affinity: 1.15
+    markdown_response_index: 1.25
+    cold_storage_capacity_units: 9000
+    receiving_window_start: "06:30"
+    receiving_window_end: "11:30"
+    nearest_store_ids: ["store_012", "store_002"]
+
+  - store_id: store_014
+    store_name: Square One Fresh
+    district: Mississauga
+    latitude: 43.5934
+    longitude: -79.6399
+    store_format: flagship
+    store_persona: high_volume_suburban_family
+    footfall_index: 1.50
+    price_sensitivity_index: 1.00
+    prepared_foods_affinity: 1.20
+    fresh_produce_affinity: 1.30
+    markdown_response_index: 1.05
+    cold_storage_capacity_units: 18000
+    receiving_window_start: "06:00"
+    receiving_window_end: "12:00"
+    nearest_store_ids: ["store_015", "store_009"]
+
+  - store_id: store_015
+    store_name: Port Credit Fresh
+    district: Mississauga
+    latitude: 43.5515
+    longitude: -79.5824
+    store_format: medium_urban
+    store_persona: higher_income_lakeside
+    footfall_index: 1.05
+    price_sensitivity_index: 0.80
+    prepared_foods_affinity: 1.20
+    fresh_produce_affinity: 1.25
+    markdown_response_index: 0.85
+    cold_storage_capacity_units: 11000
+    receiving_window_start: "06:30"
+    receiving_window_end: "12:00"
+    nearest_store_ids: ["store_014", "store_008"]
