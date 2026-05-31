@@ -20,6 +20,11 @@ def config_dir() -> Path:
     return data_dir() / "config"
 
 
+def policies_dir() -> Path:
+    """Return the policy document directory."""
+    return data_dir() / "policies"
+
+
 def generated_data_dir() -> Path:
     """Return the generated data directory."""
     return data_dir() / "generated"
