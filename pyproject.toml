@@ -15,6 +15,7 @@ dependencies = [
 [project.scripts]
 itara-generate-network-artifacts = "itara.geo.artifacts:main"
 itara-generate-sku-catalog = "itara.domain.sku_catalog:main"
+itara-validate-phase-one = "itara.validation:main"
 
 [project.optional-dependencies]
 dev = [
