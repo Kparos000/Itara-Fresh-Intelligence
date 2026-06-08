@@ -1,0 +1,487 @@
+[
+  {
+    "category_coverage": [
+      "produce",
+      "dairy",
+      "meat",
+      "bakery",
+      "deli",
+      "seafood",
+      "prepared_foods",
+      "floral"
+    ],
+    "coordinates": {
+      "latitude": 43.7418,
+      "longitude": -79.5294
+    },
+    "metadata": {
+      "average_days_of_cover": 12,
+      "emergency_dispatch_allowed": true,
+      "transfer_max_radius_km": 25.0
+    },
+    "node_id": "warehouse_001",
+    "node_name": "Itara Central Fresh Distribution Centre",
+    "node_type": "warehouse",
+    "region": "Central Distribution"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.6436,
+      "longitude": -79.4023
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 14000,
+      "footfall_index": 1.35,
+      "price_sensitivity_index": 0.8,
+      "store_format": "large_urban",
+      "store_persona": "young_professionals"
+    },
+    "node_id": "store_001",
+    "node_name": "King West Fresh",
+    "node_type": "store",
+    "region": "Old Toronto"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.6773,
+      "longitude": -79.3527
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 11500,
+      "footfall_index": 1.15,
+      "price_sensitivity_index": 1.0,
+      "store_format": "medium_urban",
+      "store_persona": "mixed_family_residential"
+    },
+    "node_id": "store_002",
+    "node_name": "Danforth Fresh",
+    "node_type": "store",
+    "region": "Old Toronto"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.6384,
+      "longitude": -79.4195
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 12000,
+      "footfall_index": 1.25,
+      "price_sensitivity_index": 0.9,
+      "store_format": "medium_urban",
+      "store_persona": "condo_convenience"
+    },
+    "node_id": "store_003",
+    "node_name": "Liberty Village Fresh",
+    "node_type": "store",
+    "region": "Old Toronto"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.7615,
+      "longitude": -79.4111
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 13000,
+      "footfall_index": 1.3,
+      "price_sensitivity_index": 0.95,
+      "store_format": "large_urban",
+      "store_persona": "transit_hub_professionals"
+    },
+    "node_id": "store_004",
+    "node_name": "Yonge Sheppard Fresh",
+    "node_type": "store",
+    "region": "North York"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.7377,
+      "longitude": -79.4526
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 12500,
+      "footfall_index": 1.05,
+      "price_sensitivity_index": 1.15,
+      "store_format": "suburban",
+      "store_persona": "diverse_family_halal"
+    },
+    "node_id": "store_005",
+    "node_name": "Wilson Fresh",
+    "node_type": "store",
+    "region": "North York"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.7764,
+      "longitude": -79.2579
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 15000,
+      "footfall_index": 1.3,
+      "price_sensitivity_index": 1.1,
+      "store_format": "suburban",
+      "store_persona": "suburban_mall_family"
+    },
+    "node_id": "store_006",
+    "node_name": "Scarborough Town Centre Fresh",
+    "node_type": "store",
+    "region": "Scarborough"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.7483,
+      "longitude": -79.2283
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 9500,
+      "footfall_index": 0.95,
+      "price_sensitivity_index": 1.35,
+      "store_format": "compact_neighbourhood",
+      "store_persona": "east_scarborough_value"
+    },
+    "node_id": "store_007",
+    "node_name": "Kingston Eglinton Fresh",
+    "node_type": "store",
+    "region": "Scarborough"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.6531,
+      "longitude": -79.4783
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 11500,
+      "footfall_index": 1.1,
+      "price_sensitivity_index": 0.75,
+      "store_format": "medium_urban",
+      "store_persona": "high_income_residential"
+    },
+    "node_id": "store_008",
+    "node_name": "Bloor West Fresh",
+    "node_type": "store",
+    "region": "Etobicoke"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.6984,
+      "longitude": -79.537
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 11000,
+      "footfall_index": 1.0,
+      "price_sensitivity_index": 1.3,
+      "store_format": "suburban",
+      "store_persona": "diverse_price_sensitive"
+    },
+    "node_id": "store_009",
+    "node_name": "Kipling Dixon Fresh",
+    "node_type": "store",
+    "region": "Etobicoke"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.719,
+      "longitude": -79.5111
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 9000,
+      "footfall_index": 0.95,
+      "price_sensitivity_index": 1.45,
+      "store_format": "compact_neighbourhood",
+      "store_persona": "working_class_value"
+    },
+    "node_id": "store_010",
+    "node_name": "Weston Lawrence Fresh",
+    "node_type": "store",
+    "region": "York"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.7604,
+      "longitude": -79.5102
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 10000,
+      "footfall_index": 1.1,
+      "price_sensitivity_index": 1.5,
+      "store_format": "compact_neighbourhood",
+      "store_persona": "high_volume_basics"
+    },
+    "node_id": "store_011",
+    "node_name": "Jane Finch Fresh",
+    "node_type": "store",
+    "region": "York"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.6837,
+      "longitude": -79.3166
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 10500,
+      "footfall_index": 1.0,
+      "price_sensitivity_index": 1.05,
+      "store_format": "medium_urban",
+      "store_persona": "residential_families"
+    },
+    "node_id": "store_012",
+    "node_name": "Woodbine Danforth Fresh",
+    "node_type": "store",
+    "region": "East York"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.7003,
+      "longitude": -79.3086
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 9000,
+      "footfall_index": 0.9,
+      "price_sensitivity_index": 1.2,
+      "store_format": "compact_neighbourhood",
+      "store_persona": "older_residential"
+    },
+    "node_id": "store_013",
+    "node_name": "Victoria Park OConnor Fresh",
+    "node_type": "store",
+    "region": "East York"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.5934,
+      "longitude": -79.6399
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 18000,
+      "footfall_index": 1.5,
+      "price_sensitivity_index": 1.0,
+      "store_format": "flagship",
+      "store_persona": "high_volume_suburban_family"
+    },
+    "node_id": "store_014",
+    "node_name": "Square One Fresh",
+    "node_type": "store",
+    "region": "Mississauga"
+  },
+  {
+    "category_coverage": [],
+    "coordinates": {
+      "latitude": 43.5515,
+      "longitude": -79.5824
+    },
+    "metadata": {
+      "cold_storage_capacity_units": 11000,
+      "footfall_index": 1.05,
+      "price_sensitivity_index": 0.8,
+      "store_format": "medium_urban",
+      "store_persona": "higher_income_lakeside"
+    },
+    "node_id": "store_015",
+    "node_name": "Port Credit Fresh",
+    "node_type": "store",
+    "region": "Mississauga"
+  },
+  {
+    "category_coverage": [
+      "produce"
+    ],
+    "coordinates": {
+      "latitude": 42.0531,
+      "longitude": -82.5998
+    },
+    "metadata": {
+      "emergency_delivery_allowed": true,
+      "minimum_order_value": 5000.0,
+      "normal_lead_time_days": 2,
+      "reliability_score": 0.88
+    },
+    "node_id": "supplier_001",
+    "node_name": "Ontario Greenhouse Produce Co.",
+    "node_type": "supplier",
+    "region": "Leamington Produce Hub"
+  },
+  {
+    "category_coverage": [
+      "produce"
+    ],
+    "coordinates": {
+      "latitude": 43.0896,
+      "longitude": -79.0849
+    },
+    "metadata": {
+      "emergency_delivery_allowed": false,
+      "minimum_order_value": 4000.0,
+      "normal_lead_time_days": 2,
+      "reliability_score": 0.84
+    },
+    "node_id": "supplier_002",
+    "node_name": "Niagara Orchard Network",
+    "node_type": "supplier",
+    "region": "Niagara Fresh Aggregation Centre"
+  },
+  {
+    "category_coverage": [
+      "dairy"
+    ],
+    "coordinates": {
+      "latitude": 43.5448,
+      "longitude": -80.2482
+    },
+    "metadata": {
+      "emergency_delivery_allowed": true,
+      "minimum_order_value": 6000.0,
+      "normal_lead_time_days": 1,
+      "reliability_score": 0.92
+    },
+    "node_id": "supplier_003",
+    "node_name": "Golden Horseshoe Dairy",
+    "node_type": "supplier",
+    "region": "Guelph Dairy Cold Hub"
+  },
+  {
+    "category_coverage": [
+      "meat"
+    ],
+    "coordinates": {
+      "latitude": 43.7315,
+      "longitude": -79.7624
+    },
+    "metadata": {
+      "emergency_delivery_allowed": true,
+      "minimum_order_value": 7000.0,
+      "normal_lead_time_days": 2,
+      "reliability_score": 0.86
+    },
+    "node_id": "supplier_004",
+    "node_name": "Ontario Premium Meats",
+    "node_type": "supplier",
+    "region": "Brampton Meat Distribution Hub"
+  },
+  {
+    "category_coverage": [
+      "meat"
+    ],
+    "coordinates": {
+      "latitude": 43.589,
+      "longitude": -79.6441
+    },
+    "metadata": {
+      "emergency_delivery_allowed": false,
+      "minimum_order_value": 5500.0,
+      "normal_lead_time_days": 2,
+      "reliability_score": 0.83
+    },
+    "node_id": "supplier_005",
+    "node_name": "Halal Select Meats",
+    "node_type": "supplier",
+    "region": "Mississauga Halal Protein Hub"
+  },
+  {
+    "category_coverage": [
+      "bakery"
+    ],
+    "coordinates": {
+      "latitude": 43.77,
+      "longitude": -79.413
+    },
+    "metadata": {
+      "emergency_delivery_allowed": true,
+      "minimum_order_value": 2500.0,
+      "normal_lead_time_days": 1,
+      "reliability_score": 0.9
+    },
+    "node_id": "supplier_006",
+    "node_name": "Toronto Artisan Bakery Supply",
+    "node_type": "supplier",
+    "region": "North York Bakery Hub"
+  },
+  {
+    "category_coverage": [
+      "deli"
+    ],
+    "coordinates": {
+      "latitude": 43.8563,
+      "longitude": -79.5085
+    },
+    "metadata": {
+      "emergency_delivery_allowed": true,
+      "minimum_order_value": 4500.0,
+      "normal_lead_time_days": 2,
+      "reliability_score": 0.87
+    },
+    "node_id": "supplier_007",
+    "node_name": "Metro Deli Provisions",
+    "node_type": "supplier",
+    "region": "Vaughan Deli Cold Hub"
+  },
+  {
+    "category_coverage": [
+      "seafood"
+    ],
+    "coordinates": {
+      "latitude": 43.6511,
+      "longitude": -79.347
+    },
+    "metadata": {
+      "emergency_delivery_allowed": true,
+      "minimum_order_value": 6500.0,
+      "normal_lead_time_days": 1,
+      "reliability_score": 0.82
+    },
+    "node_id": "supplier_008",
+    "node_name": "Great Lakes Seafood Supply",
+    "node_type": "supplier",
+    "region": "Toronto Seafood Cold Dock"
+  },
+  {
+    "category_coverage": [
+      "prepared_foods"
+    ],
+    "coordinates": {
+      "latitude": 43.6205,
+      "longitude": -79.5132
+    },
+    "metadata": {
+      "emergency_delivery_allowed": true,
+      "minimum_order_value": 3500.0,
+      "normal_lead_time_days": 1,
+      "reliability_score": 0.89
+    },
+    "node_id": "supplier_009",
+    "node_name": "ReadyFresh Prepared Foods",
+    "node_type": "supplier",
+    "region": "Etobicoke Prepared Foods Kitchen"
+  },
+  {
+    "category_coverage": [
+      "floral"
+    ],
+    "coordinates": {
+      "latitude": 43.5183,
+      "longitude": -79.8774
+    },
+    "metadata": {
+      "emergency_delivery_allowed": false,
+      "minimum_order_value": 3000.0,
+      "normal_lead_time_days": 2,
+      "reliability_score": 0.85
+    },
+    "node_id": "supplier_010",
+    "node_name": "Bloom Ontario Floral",
+    "node_type": "supplier",
+    "region": "Milton Floral Distribution Hub"
+  }
+]

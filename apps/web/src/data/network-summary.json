@@ -1,0 +1,11 @@
+{
+  "distance_matrix_entries": 650,
+  "max_estimated_drive_minutes": 713.7,
+  "max_estimated_road_distance_km": 416.307,
+  "node_type_counts": {
+    "store": 15,
+    "supplier": 10,
+    "warehouse": 1
+  },
+  "total_nodes": 26
+}

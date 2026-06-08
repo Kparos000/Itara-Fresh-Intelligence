@@ -1,86 +1,38 @@
+import networkNodesJson from "./network-nodes.json";
+import networkSummaryJson from "./network-summary.json";
+
 export type NetworkNodeType = "store" | "warehouse" | "supplier";
 
-export type NetworkNode = {
-  id: string;
-  name: string;
-  type: NetworkNodeType;
-  region: string;
+export type Coordinates = {
   latitude: number;
   longitude: number;
-  description: string;
 };
 
-export const networkNodes: NetworkNode[] = [
-  {
-    id: "warehouse_001",
-    name: "Itara Central Fresh Distribution Centre",
-    type: "warehouse",
-    region: "Central Distribution",
-    latitude: 43.7418,
-    longitude: -79.5294,
-    description: "Main network warehouse for supplier receiving and store replenishment.",
-  },
-  {
-    id: "store_001",
-    name: "King West Fresh",
-    type: "store",
-    region: "Old Toronto",
-    latitude: 43.6436,
-    longitude: -79.4023,
-    description: "High prepared-foods demand store serving young professionals.",
-  },
-  {
-    id: "store_004",
-    name: "Yonge Sheppard Fresh",
-    type: "store",
-    region: "North York",
-    latitude: 43.7615,
-    longitude: -79.4111,
-    description: "Transit-hub urban store with strong weekday demand.",
-  },
-  {
-    id: "store_006",
-    name: "Scarborough Town Centre Fresh",
-    type: "store",
-    region: "Scarborough",
-    latitude: 43.7764,
-    longitude: -79.2579,
-    description: "High-volume suburban mall anchor store.",
-  },
-  {
-    id: "store_014",
-    name: "Square One Fresh",
-    type: "store",
-    region: "Mississauga",
-    latitude: 43.5934,
-    longitude: -79.6399,
-    description: "Flagship suburban family store with high volume.",
-  },
-  {
-    id: "supplier_001",
-    name: "Ontario Greenhouse Produce Co.",
-    type: "supplier",
-    region: "Leamington Produce Hub",
-    latitude: 42.0531,
-    longitude: -82.5998,
-    description: "Primary produce supplier shipping bulk inventory to the warehouse.",
-  },
-  {
-    id: "supplier_003",
-    name: "Golden Horseshoe Dairy",
-    type: "supplier",
-    region: "Guelph Dairy Cold Hub",
-    latitude: 43.5448,
-    longitude: -80.2482,
-    description: "Dairy supplier with frequent cold-chain delivery schedule.",
-  },
-];
-
-export const networkSummary = {
-  stores: 15,
-  suppliers: 10,
-  warehouses: 1,
-  skus: 500,
-  policies: 5,
-  distanceMatrixEntries: 650,
+export type NetworkNode = {
+  node_id: string;
+  node_type: NetworkNodeType;
+  node_name: string;
+  coordinates: Coordinates;
+  region: string | null;
+  category_coverage: string[];
+  metadata: Record<string, unknown>;
 };
+
+export type NetworkSummary = {
+  total_nodes: number;
+  node_type_counts: {
+    store: number;
+    supplier: number;
+    warehouse: number;
+  };
+  distance_matrix_entries: number;
+  max_estimated_road_distance_km: number;
+  max_estimated_drive_minutes: number;
+};
+
+export const networkNodes = networkNodesJson as unknown as NetworkNode[];
+export const networkSummary = networkSummaryJson as unknown as NetworkSummary;
+
+export const stores = networkNodes.filter((node) => node.node_type === "store");
+export const suppliers = networkNodes.filter((node) => node.node_type === "supplier");
+export const warehouses = networkNodes.filter((node) => node.node_type === "warehouse");
