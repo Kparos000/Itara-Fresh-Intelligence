@@ -14,19 +14,27 @@ const nodeLabelClasses: Record<NetworkNodeType, string> = {
 
 export function MapPin({
   node,
-  className,
+  leftPercent,
+  topPercent,
 }: {
   node: NetworkNode;
-  className: string;
+  leftPercent: number;
+  topPercent: number;
 }) {
   return (
-    <div className={`absolute ${className}`}>
-      <div className="flex items-center gap-2">
+    <div
+      className="absolute"
+      style={{
+        left: `${leftPercent}%`,
+        top: `${topPercent}%`,
+      }}
+    >
+      <div className="flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
         <span
-          className={`h-4 w-4 rounded-full ${nodeColorClasses[node.node_type]} shadow-lg shadow-black`}
+          className={`h-4 w-4 shrink-0 rounded-full ${nodeColorClasses[node.node_type]} shadow-lg shadow-black`}
         />
         <span
-          className={`rounded-full bg-slate-900/90 px-3 py-1 text-xs font-semibold ring-1 ring-white/10 ${nodeLabelClasses[node.node_type]}`}
+          className={`max-w-[180px] rounded-full bg-slate-900/90 px-3 py-1 text-xs font-semibold ring-1 ring-white/10 ${nodeLabelClasses[node.node_type]}`}
         >
           {node.node_name}
         </span>
