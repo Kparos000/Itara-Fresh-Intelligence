@@ -11,6 +11,18 @@ const nodeColors: Record<NetworkNodeType, string> = {
   supplier: "#fbbf24",
 };
 
+function nodeTypeLabel(nodeType: NetworkNodeType) {
+  if (nodeType === "warehouse") {
+    return "Warehouse";
+  }
+
+  if (nodeType === "supplier") {
+    return "Supplier";
+  }
+
+  return "Store";
+}
+
 function escapeHtml(value: string) {
   return value
     .replaceAll("&", "&amp;")
@@ -20,9 +32,53 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
-export function NetworkMap({ nodes }: { nodes: NetworkNode[] }) {
+function popupHtml(node: NetworkNode) {
+  const categories =
+    node.category_coverage.length > 0
+      ? node.category_coverage.join(", ")
+      : "No category coverage";
+
+  return `
+    <div style="min-width: 220px; color: #0f172a; font-family: system-ui, sans-serif;">
+      <div style="font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #475569;">
+        ${escapeHtml(nodeTypeLabel(node.node_type))}
+      </div>
+
+      <div style="margin-top: 6px; font-size: 18px; font-weight: 800; line-height: 1.25; color: #020617;">
+        ${escapeHtml(node.node_name)}
+      </div>
+
+      <div style="margin-top: 10px; font-size: 13px; color: #334155;">
+        <strong>Region:</strong> ${escapeHtml(node.region ?? "Unknown region")}
+      </div>
+
+      <div style="margin-top: 4px; font-size: 13px; color: #334155;">
+        <strong>Coordinates:</strong> ${node.coordinates.latitude.toFixed(4)}, ${node.coordinates.longitude.toFixed(4)}
+      </div>
+
+      <div style="margin-top: 4px; font-size: 13px; color: #334155;">
+        <strong>Categories:</strong> ${escapeHtml(categories)}
+      </div>
+
+      <div style="margin-top: 10px; border-radius: 9999px; background: #f1f5f9; padding: 5px 9px; display: inline-block; font-size: 12px; font-weight: 700; color: #0f172a;">
+        ${escapeHtml(node.node_id)}
+      </div>
+    </div>
+  `;
+}
+
+export function NetworkMap({
+  nodes,
+  selectedNodeId,
+  onNodeSelect,
+}: {
+  nodes: NetworkNode[];
+  selectedNodeId: string | null;
+  onNodeSelect: (nodeId: string) => void;
+}) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) {
@@ -56,13 +112,15 @@ export function NetworkMap({ nodes }: { nodes: NetworkNode[] }) {
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     const bounds = new maplibregl.LngLatBounds();
-    const markers: maplibregl.Marker[] = [];
+    const markers = new Map<string, maplibregl.Marker>();
 
     nodes.forEach((node) => {
       const longitude = node.coordinates.longitude;
       const latitude = node.coordinates.latitude;
 
-      const markerElement = document.createElement("div");
+      const markerElement = document.createElement("button");
+      markerElement.type = "button";
+      markerElement.setAttribute("aria-label", `Select ${node.node_name}`);
       markerElement.style.width = "18px";
       markerElement.style.height = "18px";
       markerElement.style.borderRadius = "9999px";
@@ -71,14 +129,11 @@ export function NetworkMap({ nodes }: { nodes: NetworkNode[] }) {
       markerElement.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.35)";
       markerElement.style.cursor = "pointer";
 
-      const popup = new maplibregl.Popup({ offset: 18 }).setHTML(`
-        <div style="font-family: system-ui, sans-serif;">
-          <strong>${escapeHtml(node.node_name)}</strong>
-          <div>${escapeHtml(node.node_type.toUpperCase())}</div>
-          <div>${escapeHtml(node.region ?? "Unknown region")}</div>
-          <div>${latitude.toFixed(4)}, ${longitude.toFixed(4)}</div>
-        </div>
-      `);
+      markerElement.addEventListener("click", () => {
+        onNodeSelect(node.node_id);
+      });
+
+      const popup = new maplibregl.Popup({ offset: 18 }).setHTML(popupHtml(node));
 
       const marker = new maplibregl.Marker({ element: markerElement })
         .setLngLat([longitude, latitude])
@@ -86,7 +141,7 @@ export function NetworkMap({ nodes }: { nodes: NetworkNode[] }) {
         .addTo(map);
 
       bounds.extend([longitude, latitude]);
-      markers.push(marker);
+      markers.set(node.node_id, marker);
     });
 
     if (!bounds.isEmpty()) {
@@ -97,14 +152,37 @@ export function NetworkMap({ nodes }: { nodes: NetworkNode[] }) {
       });
     }
 
+    markersRef.current = markers;
     mapRef.current = map;
 
     return () => {
       markers.forEach((marker) => marker.remove());
+      markers.clear();
       map.remove();
       mapRef.current = null;
     };
-  }, [nodes]);
+  }, [nodes, onNodeSelect]);
+
+  useEffect(() => {
+    if (!selectedNodeId) {
+      return;
+    }
+
+    const selectedNode = nodes.find((node) => node.node_id === selectedNodeId);
+    const marker = markersRef.current.get(selectedNodeId);
+
+    if (!selectedNode || !marker || !mapRef.current) {
+      return;
+    }
+
+    mapRef.current.flyTo({
+      center: [selectedNode.coordinates.longitude, selectedNode.coordinates.latitude],
+      zoom: 10,
+      essential: true,
+    });
+
+    marker.togglePopup();
+  }, [nodes, selectedNodeId]);
 
   return (
     <div className="h-[620px] overflow-hidden rounded-2xl border border-slate-800 bg-slate-950">
