@@ -19,6 +19,7 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<NodeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showWarehouseRoutes, setShowWarehouseRoutes] = useState(true);
 
   const nodeRefs = useMemo(() => {
     return new Map(nodes.map((node) => [node.node_id, createRef<HTMLDivElement>()]));
@@ -83,13 +84,33 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
             <LegendDot label="Warehouse" className="bg-blue-400" />
             <LegendDot label="Store" className="bg-emerald-400" />
             <LegendDot label="Supplier" className="bg-amber-400" />
+
+            <button
+              type="button"
+              onClick={() => setShowWarehouseRoutes((current) => !current)}
+              className={`rounded-full px-4 py-2 font-semibold transition ${
+                showWarehouseRoutes
+                  ? "bg-blue-400 text-slate-950"
+                  : "bg-slate-950 text-slate-300 ring-1 ring-white/10 hover:bg-slate-800"
+              }`}
+            >
+              Warehouse → Store routes {showWarehouseRoutes ? "shown" : "hidden"}
+            </button>
           </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-blue-400/30 bg-blue-400/10 p-4 text-sm leading-6 text-blue-100">
+          <strong>Overlay meaning:</strong> blue dashed lines represent normal
+          outbound replenishment relationships from the central warehouse to store
+          locations. This reinforces the rule that stores are replenished from the
+          warehouse first; suppliers remain upstream of the warehouse.
         </div>
 
         <div className="mt-8">
           <NetworkMap
             nodes={filteredNodes}
             selectedNodeId={selectedNodeId}
+            showWarehouseRoutes={showWarehouseRoutes}
             onNodeSelect={handleNodeSelect}
           />
         </div>

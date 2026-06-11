@@ -39,8 +39,8 @@ function popupHtml(node: NetworkNode) {
       : "No category coverage";
 
   return `
-    <div style="min-width: 220px; color: #0f172a; font-family: system-ui, sans-serif;">
-      <div style="font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #475569;">
+    <div style="min-width: 240px; color: #0f172a; font-family: system-ui, sans-serif;">
+      <div style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #475569;">
         ${escapeHtml(nodeTypeLabel(node.node_type))}
       </div>
 
@@ -67,13 +67,47 @@ function popupHtml(node: NetworkNode) {
   `;
 }
 
+function warehouseToStoreRouteGeoJson(nodes: NetworkNode[]) {
+  const warehouse = nodes.find((node) => node.node_type === "warehouse");
+  const stores = nodes.filter((node) => node.node_type === "store");
+
+  if (!warehouse) {
+    return {
+      type: "FeatureCollection" as const,
+      features: [],
+    };
+  }
+
+  return {
+    type: "FeatureCollection" as const,
+    features: stores.map((store) => ({
+      type: "Feature" as const,
+      properties: {
+        route_id: `${warehouse.node_id}_to_${store.node_id}`,
+        source: warehouse.node_id,
+        target: store.node_id,
+        route_type: "warehouse_to_store_replenishment",
+      },
+      geometry: {
+        type: "LineString" as const,
+        coordinates: [
+          [warehouse.coordinates.longitude, warehouse.coordinates.latitude],
+          [store.coordinates.longitude, store.coordinates.latitude],
+        ],
+      },
+    })),
+  };
+}
+
 export function NetworkMap({
   nodes,
   selectedNodeId,
+  showWarehouseRoutes,
   onNodeSelect,
 }: {
   nodes: NetworkNode[];
   selectedNodeId: string | null;
+  showWarehouseRoutes: boolean;
   onNodeSelect: (nodeId: string) => void;
 }) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -110,6 +144,46 @@ export function NetworkMap({
     });
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    map.on("load", () => {
+      map.addSource("warehouse-routes", {
+        type: "geojson",
+        data: warehouseToStoreRouteGeoJson(nodes),
+      });
+
+      map.addLayer({
+        id: "warehouse-routes-glow",
+        type: "line",
+        source: "warehouse-routes",
+        layout: {
+          visibility: showWarehouseRoutes ? "visible" : "none",
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": "#93c5fd",
+          "line-width": 9,
+          "line-opacity": 0.35,
+        },
+      });
+
+      map.addLayer({
+        id: "warehouse-routes",
+        type: "line",
+        source: "warehouse-routes",
+        layout: {
+          visibility: showWarehouseRoutes ? "visible" : "none",
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": "#2563eb",
+          "line-width": 4,
+          "line-opacity": 0.9,
+          "line-dasharray": [2, 1],
+        },
+      });
+    });
 
     const bounds = new maplibregl.LngLatBounds();
     const markers = new Map<string, maplibregl.Marker>();
@@ -161,7 +235,25 @@ export function NetworkMap({
       map.remove();
       mapRef.current = null;
     };
-  }, [nodes, onNodeSelect]);
+  }, [nodes, onNodeSelect, showWarehouseRoutes]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    const visibility = showWarehouseRoutes ? "visible" : "none";
+
+    if (map.getLayer("warehouse-routes")) {
+      map.setLayoutProperty("warehouse-routes", "visibility", visibility);
+    }
+
+    if (map.getLayer("warehouse-routes-glow")) {
+      map.setLayoutProperty("warehouse-routes-glow", "visibility", visibility);
+    }
+  }, [showWarehouseRoutes]);
 
   useEffect(() => {
     if (!selectedNodeId) {
