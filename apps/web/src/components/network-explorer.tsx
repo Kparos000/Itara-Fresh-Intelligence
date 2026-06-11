@@ -1,23 +1,56 @@
 "use client";
 
-import { createRef, useCallback, useMemo, useRef, useState } from "react";
+import { createRef, useCallback, useMemo, useState } from "react";
 
 import { NetworkMap } from "@/components/network-map";
 import { NetworkNodeCard } from "@/components/network-node-card";
-import type { NetworkNode } from "@/data/network";
+import type { NetworkNode, NetworkNodeType } from "@/data/network";
+
+type NodeFilter = "all" | NetworkNodeType;
+
+const filterLabels: Record<NodeFilter, string> = {
+  all: "All",
+  warehouse: "Warehouse",
+  store: "Stores",
+  supplier: "Suppliers",
+};
 
 export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<NodeFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const nodeRefs = useMemo(() => {
     return new Map(nodes.map((node) => [node.node_id, createRef<HTMLDivElement>()]));
   }, [nodes]);
 
-  const inventoryPanelRef = useRef<HTMLDivElement | null>(null);
+  const filteredNodes = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const stores = nodes.filter((node) => node.node_type === "store");
-  const suppliers = nodes.filter((node) => node.node_type === "supplier");
-  const warehouses = nodes.filter((node) => node.node_type === "warehouse");
+    return nodes.filter((node) => {
+      const matchesFilter =
+        activeFilter === "all" || node.node_type === activeFilter;
+
+      const searchableText = [
+        node.node_id,
+        node.node_name,
+        node.node_type,
+        node.region ?? "",
+        node.category_coverage.join(" "),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      const matchesSearch =
+        normalizedQuery.length === 0 || searchableText.includes(normalizedQuery);
+
+      return matchesFilter && matchesSearch;
+    });
+  }, [activeFilter, nodes, searchQuery]);
+
+  const stores = filteredNodes.filter((node) => node.node_type === "store");
+  const suppliers = filteredNodes.filter((node) => node.node_type === "supplier");
+  const warehouses = filteredNodes.filter((node) => node.node_type === "warehouse");
 
   const handleNodeSelect = useCallback(
     (nodeId: string) => {
@@ -55,7 +88,7 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
 
         <div className="mt-8">
           <NetworkMap
-            nodes={nodes}
+            nodes={filteredNodes}
             selectedNodeId={selectedNodeId}
             onNodeSelect={handleNodeSelect}
           />
@@ -63,42 +96,89 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
       </div>
 
       <aside className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-        <h2 className="text-2xl font-bold text-white">Network inventory</h2>
-        <p className="mt-2 text-sm text-slate-400">
-          Selecting a map marker scrolls this panel to the matching node.
-        </p>
+        <div className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Network inventory</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Search, filter, and select any generated network node.
+            </p>
+          </div>
 
-        <div
-          ref={inventoryPanelRef}
-          className="mt-6 flex max-h-[720px] flex-col gap-3 overflow-y-auto pr-2"
-        >
+          <input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search store, supplier, region, or category..."
+            className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none ring-0 placeholder:text-slate-500 focus:border-emerald-400"
+          />
+
+          <div className="flex flex-wrap gap-2">
+            {(Object.keys(filterLabels) as NodeFilter[]).map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setActiveFilter(filter)}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                  activeFilter === filter
+                    ? "bg-emerald-400 text-slate-950"
+                    : "bg-slate-950 text-slate-300 ring-1 ring-white/10 hover:bg-slate-800"
+                }`}
+              >
+                {filterLabels[filter]}
+              </button>
+            ))}
+          </div>
+
+          <p className="text-sm text-slate-400">
+            Showing {filteredNodes.length} of {nodes.length} nodes
+          </p>
+        </div>
+
+        <div className="mt-6 flex max-h-[720px] flex-col gap-3 overflow-y-auto pr-2">
           <SectionTitle label="Warehouse" count={warehouses.length} />
           {warehouses.map((node) => (
             <div key={node.node_id} ref={nodeRefs.get(node.node_id)}>
-              <NetworkNodeCard
-                node={node}
-                isSelected={selectedNodeId === node.node_id}
-              />
+              <button
+                type="button"
+                onClick={() => handleNodeSelect(node.node_id)}
+                className="w-full text-left"
+              >
+                <NetworkNodeCard
+                  node={node}
+                  isSelected={selectedNodeId === node.node_id}
+                />
+              </button>
             </div>
           ))}
 
           <SectionTitle label="Stores" count={stores.length} />
           {stores.map((node) => (
             <div key={node.node_id} ref={nodeRefs.get(node.node_id)}>
-              <NetworkNodeCard
-                node={node}
-                isSelected={selectedNodeId === node.node_id}
-              />
+              <button
+                type="button"
+                onClick={() => handleNodeSelect(node.node_id)}
+                className="w-full text-left"
+              >
+                <NetworkNodeCard
+                  node={node}
+                  isSelected={selectedNodeId === node.node_id}
+                />
+              </button>
             </div>
           ))}
 
           <SectionTitle label="Suppliers" count={suppliers.length} />
           {suppliers.map((node) => (
             <div key={node.node_id} ref={nodeRefs.get(node.node_id)}>
-              <NetworkNodeCard
-                node={node}
-                isSelected={selectedNodeId === node.node_id}
-              />
+              <button
+                type="button"
+                onClick={() => handleNodeSelect(node.node_id)}
+                className="w-full text-left"
+              >
+                <NetworkNodeCard
+                  node={node}
+                  isSelected={selectedNodeId === node.node_id}
+                />
+              </button>
             </div>
           ))}
         </div>
