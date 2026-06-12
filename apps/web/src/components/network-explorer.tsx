@@ -52,6 +52,10 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
   const stores = filteredNodes.filter((node) => node.node_type === "store");
   const suppliers = filteredNodes.filter((node) => node.node_type === "supplier");
   const warehouses = filteredNodes.filter((node) => node.node_type === "warehouse");
+  const supplierCount = nodes.filter(
+    (node) => node.node_type === "supplier",
+  ).length;
+  const storeCount = nodes.filter((node) => node.node_type === "store").length;
 
   const handleNodeSelect = useCallback(
     (nodeId: string) => {
@@ -104,6 +108,28 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
           outbound replenishment relationships from the central warehouse to store
           locations. This reinforces the rule that stores are replenished from the
           warehouse first; suppliers remain upstream of the warehouse.
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
+          <div>
+            <h3 className="font-bold text-white">Operational flow summary</h3>
+            <p className="mt-1 text-sm leading-6 text-slate-400">
+              Suppliers feed the warehouse, the warehouse replenishes stores, and
+              store-to-store transfers are reserved for rare exceptions.
+            </p>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <FlowMetric
+              label="Supplier inbound nodes"
+              value={supplierCount.toString()}
+            />
+            <FlowMetric
+              label="Warehouse outbound routes"
+              value={storeCount.toString()}
+            />
+            <FlowMetric label="Transfer exceptions" value="0 planned" />
+          </div>
         </div>
 
         <div className="mt-8">
@@ -205,6 +231,17 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
         </div>
       </aside>
     </section>
+  );
+}
+
+function FlowMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-bold text-slate-100">{value}</p>
+    </div>
   );
 }
 
