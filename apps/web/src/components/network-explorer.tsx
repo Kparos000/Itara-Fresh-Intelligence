@@ -19,6 +19,7 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<NodeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSupplierRoutes, setShowSupplierRoutes] = useState(true);
   const [showWarehouseRoutes, setShowWarehouseRoutes] = useState(true);
 
   const nodeRefs = useMemo(() => {
@@ -91,6 +92,19 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
 
             <button
               type="button"
+              onClick={() => setShowSupplierRoutes((current) => !current)}
+              className={`rounded-full px-4 py-2 font-semibold transition ${
+                showSupplierRoutes
+                  ? "bg-amber-400 text-slate-950"
+                  : "bg-slate-950 text-slate-300 ring-1 ring-white/10 hover:bg-slate-800"
+              }`}
+            >
+              Supplier → Warehouse routes{" "}
+              {showSupplierRoutes ? "shown" : "hidden"}
+            </button>
+
+            <button
+              type="button"
               onClick={() => setShowWarehouseRoutes((current) => !current)}
               className={`rounded-full px-4 py-2 font-semibold transition ${
                 showWarehouseRoutes
@@ -104,10 +118,9 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
         </div>
 
         <div className="mt-4 rounded-2xl border border-blue-400/30 bg-blue-400/10 p-4 text-sm leading-6 text-blue-100">
-          <strong>Overlay meaning:</strong> blue dashed lines represent normal
-          outbound replenishment relationships from the central warehouse to store
-          locations. This reinforces the rule that stores are replenished from the
-          warehouse first; suppliers remain upstream of the warehouse.
+          <strong>Overlay meaning:</strong> amber dashed lines show supplier
+          deliveries into the central warehouse. Blue dashed lines show normal
+          outbound replenishment from the warehouse to stores.
         </div>
 
         <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
@@ -136,6 +149,7 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
           <NetworkMap
             nodes={filteredNodes}
             selectedNodeId={selectedNodeId}
+            showSupplierRoutes={showSupplierRoutes}
             showWarehouseRoutes={showWarehouseRoutes}
             onNodeSelect={handleNodeSelect}
           />

@@ -99,20 +99,64 @@ function warehouseToStoreRouteGeoJson(nodes: NetworkNode[]) {
   };
 }
 
+function supplierToWarehouseRouteGeoJson(nodes: NetworkNode[]) {
+  const warehouse = nodes.find((node) => node.node_type === "warehouse");
+  const suppliers = nodes.filter((node) => node.node_type === "supplier");
+
+  if (!warehouse) {
+    return {
+      type: "FeatureCollection" as const,
+      features: [],
+    };
+  }
+
+  return {
+    type: "FeatureCollection" as const,
+    features: suppliers.map((supplier) => ({
+      type: "Feature" as const,
+      properties: {
+        route_id: `${supplier.node_id}_to_${warehouse.node_id}`,
+        source: supplier.node_id,
+        target: warehouse.node_id,
+        route_type: "supplier_to_warehouse_inbound",
+      },
+      geometry: {
+        type: "LineString" as const,
+        coordinates: [
+          [supplier.coordinates.longitude, supplier.coordinates.latitude],
+          [warehouse.coordinates.longitude, warehouse.coordinates.latitude],
+        ],
+      },
+    })),
+  };
+}
+
 export function NetworkMap({
   nodes,
   selectedNodeId,
+  showSupplierRoutes,
   showWarehouseRoutes,
   onNodeSelect,
 }: {
   nodes: NetworkNode[];
   selectedNodeId: string | null;
+  showSupplierRoutes: boolean;
   showWarehouseRoutes: boolean;
   onNodeSelect: (nodeId: string) => void;
 }) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
+  const showSupplierRoutesRef = useRef(showSupplierRoutes);
+  const showWarehouseRoutesRef = useRef(showWarehouseRoutes);
+
+  useEffect(() => {
+    showSupplierRoutesRef.current = showSupplierRoutes;
+  }, [showSupplierRoutes]);
+
+  useEffect(() => {
+    showWarehouseRoutesRef.current = showWarehouseRoutes;
+  }, [showWarehouseRoutes]);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) {
@@ -146,6 +190,44 @@ export function NetworkMap({
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     map.on("load", () => {
+      map.addSource("supplier-routes", {
+        type: "geojson",
+        data: supplierToWarehouseRouteGeoJson(nodes),
+      });
+
+      map.addLayer({
+        id: "supplier-routes-glow",
+        type: "line",
+        source: "supplier-routes",
+        layout: {
+          visibility: showSupplierRoutesRef.current ? "visible" : "none",
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": "#fbbf24",
+          "line-width": 9,
+          "line-opacity": 0.3,
+        },
+      });
+
+      map.addLayer({
+        id: "supplier-routes",
+        type: "line",
+        source: "supplier-routes",
+        layout: {
+          visibility: showSupplierRoutesRef.current ? "visible" : "none",
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": "#f59e0b",
+          "line-width": 4,
+          "line-opacity": 0.9,
+          "line-dasharray": [1, 1.5],
+        },
+      });
+
       map.addSource("warehouse-routes", {
         type: "geojson",
         data: warehouseToStoreRouteGeoJson(nodes),
@@ -156,7 +238,7 @@ export function NetworkMap({
         type: "line",
         source: "warehouse-routes",
         layout: {
-          visibility: showWarehouseRoutes ? "visible" : "none",
+          visibility: showWarehouseRoutesRef.current ? "visible" : "none",
           "line-cap": "round",
           "line-join": "round",
         },
@@ -172,7 +254,7 @@ export function NetworkMap({
         type: "line",
         source: "warehouse-routes",
         layout: {
-          visibility: showWarehouseRoutes ? "visible" : "none",
+          visibility: showWarehouseRoutesRef.current ? "visible" : "none",
           "line-cap": "round",
           "line-join": "round",
         },
@@ -235,7 +317,25 @@ export function NetworkMap({
       map.remove();
       mapRef.current = null;
     };
-  }, [nodes, onNodeSelect, showWarehouseRoutes]);
+  }, [nodes, onNodeSelect]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    const visibility = showSupplierRoutes ? "visible" : "none";
+
+    if (map.getLayer("supplier-routes")) {
+      map.setLayoutProperty("supplier-routes", "visibility", visibility);
+    }
+
+    if (map.getLayer("supplier-routes-glow")) {
+      map.setLayoutProperty("supplier-routes-glow", "visibility", visibility);
+    }
+  }, [showSupplierRoutes]);
 
   useEffect(() => {
     const map = mapRef.current;
