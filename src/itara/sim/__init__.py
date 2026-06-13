@@ -15,8 +15,18 @@ from itara.sim.events import (
     WarehouseAllocationEvent,
     WarehouseReceiptEvent,
 )
+from itara.sim.financials import (
+    FinancialImpactSummary,
+    calculate_holding_cost,
+    calculate_markdown_margin_loss,
+    calculate_net_loss,
+    calculate_spoilage_loss,
+    calculate_stockout_lost_margin,
+    calculate_transfer_cost,
+)
 
 __all__ = [
+    "FinancialImpactSummary",
     "InventoryCountEvent",
     "MarkdownEvent",
     "SaleEvent",
@@ -30,4 +40,10 @@ __all__ = [
     "SupplierShortShipmentEvent",
     "WarehouseAllocationEvent",
     "WarehouseReceiptEvent",
+    "calculate_holding_cost",
+    "calculate_markdown_margin_loss",
+    "calculate_net_loss",
+    "calculate_spoilage_loss",
+    "calculate_stockout_lost_margin",
+    "calculate_transfer_cost",
 ]
