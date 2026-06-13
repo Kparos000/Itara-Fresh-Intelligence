@@ -20,6 +20,7 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
   const [activeFilter, setActiveFilter] = useState<NodeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSupplierRoutes, setShowSupplierRoutes] = useState(true);
+  const [showTransferRoutes, setShowTransferRoutes] = useState(true);
   const [showWarehouseRoutes, setShowWarehouseRoutes] = useState(true);
 
   const nodeRefs = useMemo(() => {
@@ -114,13 +115,31 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
             >
               Warehouse → Store routes {showWarehouseRoutes ? "shown" : "hidden"}
             </button>
+
+            <button
+              type="button"
+              onClick={() => setShowTransferRoutes((current) => !current)}
+              className={`rounded-full px-4 py-2 font-semibold transition ${
+                showTransferRoutes
+                  ? "bg-fuchsia-400 text-slate-950"
+                  : "bg-slate-950 text-slate-300 ring-1 ring-white/10 hover:bg-slate-800"
+              }`}
+            >
+              Transfer exceptions {showTransferRoutes ? "shown" : "hidden"}
+            </button>
           </div>
         </div>
 
         <div className="mt-4 rounded-2xl border border-blue-400/30 bg-blue-400/10 p-4 text-sm leading-6 text-blue-100">
           <strong>Overlay meaning:</strong> amber dashed lines show supplier
           deliveries into the central warehouse. Blue dashed lines show normal
-          outbound replenishment from the warehouse to stores.
+          outbound replenishment from the warehouse to stores. Pink dashed lines
+          show rare store transfer exceptions.
+        </div>
+
+        <div className="mt-3 rounded-2xl border border-fuchsia-400/30 bg-fuchsia-400/10 p-4 text-sm leading-6 text-fuchsia-100">
+          Transfer exceptions are rare, policy-constrained movements between stores
+          when warehouse replenishment cannot solve risk in time.
         </div>
 
         <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
@@ -141,7 +160,7 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
               label="Warehouse outbound routes"
               value={storeCount.toString()}
             />
-            <FlowMetric label="Transfer exceptions" value="0 planned" />
+            <FlowMetric label="Transfer exceptions" value="2 examples" />
           </div>
         </div>
 
@@ -150,6 +169,7 @@ export function NetworkExplorer({ nodes }: { nodes: NetworkNode[] }) {
             nodes={filteredNodes}
             selectedNodeId={selectedNodeId}
             showSupplierRoutes={showSupplierRoutes}
+            showTransferRoutes={showTransferRoutes}
             showWarehouseRoutes={showWarehouseRoutes}
             onNodeSelect={handleNodeSelect}
           />

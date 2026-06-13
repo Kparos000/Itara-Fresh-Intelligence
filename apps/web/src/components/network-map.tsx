@@ -11,6 +11,11 @@ const nodeColors: Record<NetworkNodeType, string> = {
   supplier: "#fbbf24",
 };
 
+const transferExceptionRoutes = [
+  { sourceNodeId: "store_004", targetNodeId: "store_011" },
+  { sourceNodeId: "store_001", targetNodeId: "store_003" },
+] as const;
+
 function nodeTypeLabel(nodeType: NetworkNodeType) {
   if (nodeType === "warehouse") {
     return "Warehouse";
@@ -131,16 +136,62 @@ function supplierToWarehouseRouteGeoJson(nodes: NetworkNode[]) {
   };
 }
 
+function storeTransferRouteGeoJson(nodes: NetworkNode[]) {
+  const nodesById = new Map(nodes.map((node) => [node.node_id, node]));
+
+  return {
+    type: "FeatureCollection" as const,
+    features: transferExceptionRoutes.flatMap((route) => {
+      const sourceStore = nodesById.get(route.sourceNodeId);
+      const targetStore = nodesById.get(route.targetNodeId);
+
+      if (
+        sourceStore?.node_type !== "store" ||
+        targetStore?.node_type !== "store"
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          type: "Feature" as const,
+          properties: {
+            route_id: `${sourceStore.node_id}_to_${targetStore.node_id}`,
+            source: sourceStore.node_id,
+            target: targetStore.node_id,
+            route_type: "store_to_store_transfer_exception",
+          },
+          geometry: {
+            type: "LineString" as const,
+            coordinates: [
+              [
+                sourceStore.coordinates.longitude,
+                sourceStore.coordinates.latitude,
+              ],
+              [
+                targetStore.coordinates.longitude,
+                targetStore.coordinates.latitude,
+              ],
+            ],
+          },
+        },
+      ];
+    }),
+  };
+}
+
 export function NetworkMap({
   nodes,
   selectedNodeId,
   showSupplierRoutes,
+  showTransferRoutes,
   showWarehouseRoutes,
   onNodeSelect,
 }: {
   nodes: NetworkNode[];
   selectedNodeId: string | null;
   showSupplierRoutes: boolean;
+  showTransferRoutes: boolean;
   showWarehouseRoutes: boolean;
   onNodeSelect: (nodeId: string) => void;
 }) {
@@ -148,11 +199,16 @@ export function NetworkMap({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
   const showSupplierRoutesRef = useRef(showSupplierRoutes);
+  const showTransferRoutesRef = useRef(showTransferRoutes);
   const showWarehouseRoutesRef = useRef(showWarehouseRoutes);
 
   useEffect(() => {
     showSupplierRoutesRef.current = showSupplierRoutes;
   }, [showSupplierRoutes]);
+
+  useEffect(() => {
+    showTransferRoutesRef.current = showTransferRoutes;
+  }, [showTransferRoutes]);
 
   useEffect(() => {
     showWarehouseRoutesRef.current = showWarehouseRoutes;
@@ -265,6 +321,28 @@ export function NetworkMap({
           "line-dasharray": [2, 1],
         },
       });
+
+      map.addSource("transfer-routes", {
+        type: "geojson",
+        data: storeTransferRouteGeoJson(nodes),
+      });
+
+      map.addLayer({
+        id: "transfer-routes",
+        type: "line",
+        source: "transfer-routes",
+        layout: {
+          visibility: showTransferRoutesRef.current ? "visible" : "none",
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": "#e879f9",
+          "line-width": 2.5,
+          "line-opacity": 0.95,
+          "line-dasharray": [1, 2],
+        },
+      });
     });
 
     const bounds = new maplibregl.LngLatBounds();
@@ -340,6 +418,20 @@ export function NetworkMap({
   useEffect(() => {
     const map = mapRef.current;
 
+    if (!map?.getLayer("transfer-routes")) {
+      return;
+    }
+
+    map.setLayoutProperty(
+      "transfer-routes",
+      "visibility",
+      showTransferRoutes ? "visible" : "none",
+    );
+  }, [showTransferRoutes]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+
     if (!map) {
       return;
     }
@@ -373,7 +465,9 @@ export function NetworkMap({
       essential: true,
     });
 
-    marker.togglePopup();
+    if (!marker.getPopup()?.isOpen()) {
+      marker.togglePopup();
+    }
   }, [nodes, selectedNodeId]);
 
   return (
