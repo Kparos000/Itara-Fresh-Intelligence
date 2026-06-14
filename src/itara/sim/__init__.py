@@ -26,6 +26,7 @@ from itara.sim.financials import (
     calculate_stockout_lost_margin,
     calculate_transfer_cost,
 )
+from itara.sim.impact import summarize_daily_financial_impact
 
 __all__ = [
     "BaseEvent",
@@ -50,5 +51,6 @@ __all__ = [
     "calculate_stockout_lost_margin",
     "calculate_transfer_cost",
     "simulate_baseline_day",
+    "summarize_daily_financial_impact",
     "summarize_events_by_type",
 ]
