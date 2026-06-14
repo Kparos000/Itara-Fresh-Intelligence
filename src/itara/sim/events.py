@@ -36,6 +36,9 @@ class SimulationEvent(BaseModel):
     created_at: datetime
 
 
+BaseEvent = SimulationEvent
+
+
 class SaleEvent(SimulationEvent):
     """Completed customer sale at a store."""
 
