@@ -1,1147 +1,490 @@
-AGENTS.md - Codex Operating Guide for Itara Fresh Intelligence
-
-
-
-This file keeps Codex aligned with the project. Read it before making changes. Follow it unless the user explicitly overrides it.
-
-
-
-\---
-
-
-
-\## Project identity
-
-
-
-Project name: \*\*Itara Fresh Intelligence\*\*
-
-
-
-Author: \*\*Kparobor Akpomiemie\*\*
-
-
-
-Repository: https://github.com/Kparos000/Itara-Fresh-Intelligence
-
-
-
-Formal description:
-
-
-
-> An agentic replenishment intelligence system that forecasts demand, coordinates warehouse-to-store allocation, handles rare store-to-store transfer exceptions, triggers supplier procurement only at the network level, and verifies high-impact decisions against operational policy to reduce spoilage, stockouts, and inference cost across a grocery network.
-
-
-
-Simple description:
-
-
-
-> Itara Fresh Intelligence helps a grocery company decide what fresh inventory should move where, when, and why — using forecasts, policies, warehouse data, logistics constraints, and learned decision patterns to reduce waste and stockouts.
-
-
-
-\---
-
-
-
-\## Non-negotiable operating assumptions
-
-
-
-1\. Itara Fresh orders from suppliers in bulk.
-
-2\. Suppliers normally deliver to the main warehouse / distribution centre, not directly to stores.
-
-3\. Store-level replenishment must check warehouse inventory before supplier procurement.
-
-4\. Supplier purchase orders are network-level procurement decisions.
-
-5\. A high-demand store does not automatically trigger supplier ordering.
-
-6\. Store-to-store transfers are rare exception actions and should remain below 2% of replenishment actions.
-
-7\. Forecasting predicts demand, but the agentic decision system decides what to do.
-
-8\. The agent does not make decisions from memory. It must use tools, policy retrieval, forecasts, inventory, logistics constraints, financial simulation, and learned advisor output.
-
-9\. Every savings claim must be generated from the simulation and financial loss engine, not hard-coded.
-
-10\. The system must be token-cost aware. Do not use LLM calls for routine no-risk cases.
-
-
-
-\---
-
-
-
-\## Phase 1 map-visualizer decision
-
-
-
-Phase 1 includes a lightweight \*\*Interactive Network Visualizer Skeleton\*\*.
-
-
-
-This is not only a Phase 8 demo artifact. The visualizer must influence the data model from the beginning.
-
-
-
-Phase 1 visualizer scope:
-
-
-
-\- show 15 Ontario stores, one central warehouse, and supplier warehouse locations
-
-\- use static/mock data at first
-
-\- include a date selector placeholder
-
-\- allow clicking stores, warehouse, and suppliers
-
-\- open an entity detail panel
-
-\- show placeholder inventory summary and daily action summary
-
-\- use mock data shaped like future API responses
-
-
-
-The full simulator will later attach daily inventory snapshots, forecasts, risk overlays, warehouse allocations, transfer routes, supplier schedules, agent actions, and financial impact to the same visual contract.
-
-
-
-\---
-
-
-
-\## Build philosophy
-
-
-
-This is an operations-first AI/ML engineering project.
-
-
-
-Correct mental model:
-
-
+# AGENTS.md - Itara Fresh Intelligence Operating Guide
+
+Read this file before making changes. It is the persistent operating guide for
+Codex and other coding agents working in this repository. Follow it unless the
+user explicitly overrides a rule for the current task.
+
+## Project identity
+
+- Project: **Itara Fresh Intelligence**
+- Author: **Kparobor Akpomiemie**
+- Repository: <https://github.com/Kparos000/Itara-Fresh-Intelligence>
+
+## Project mission
+
+Itara Fresh Intelligence is an operations-first replenishment intelligence
+system for a fresh grocery network.
+
+The system is intended to determine:
+
+> What fresh inventory should move where, when, why, and with what modeled
+> financial impact?
+
+It models suppliers, a central warehouse, stores, perishable SKUs, inventory
+events, demand, spoilage, stockouts, markdowns, transfers, supplier
+procurement, policies, financial impact, forecasts, and later agentic and
+learned decision support.
+
+This is not a generic AI-agent demo. It is a business-loss reduction system
+whose recommendations must be grounded in operational data, deterministic
+logic, policy, logistics, and modeled financial outcomes.
+
+## End-to-end system story
+
+The intended system flow is:
+
+1. Define the operating world: stores, warehouse, suppliers, SKUs, policies,
+   logistics constraints, and distances.
+2. Simulate replayable operations from 2022 through 2025.
+3. Calculate spoilage loss, stockout lost margin, markdown margin loss,
+   transfer cost, holding cost, inference cost, and net loss.
+4. Forecast demand and detect operational risk.
+5. Allocate available warehouse inventory to stores.
+6. Use store-to-store transfers only as rare, policy-constrained exceptions.
+7. Trigger supplier procurement only when the network is short.
+8. Use RAG for unstructured policies and contracts, not for structured
+   inventory or supplier values.
+9. Activate agentic reasoning only for action-required, policy-sensitive, or
+   high-exposure cases.
+10. Verify recommendations against inventory, freshness, logistics, policy,
+    and financial constraints.
+11. Save an explainable decision trace.
+12. Add a contextual-bandit advisor and token-aware model routing only after
+    the simulator and deterministic decision baseline are reliable.
+13. Present the result through a map-based operating console and business
+    impact narrative.
+
+The correct mental model is:
 
 ```text
-
 Data tells us what happened.
-
+Simulation creates replayable operating history.
 Forecasting tells us what is likely to happen.
-
-Risk detection tells us where action may be needed.
-
+Risk detection identifies where action may be needed.
 Warehouse allocation decides how existing stock should move.
-
 Transfer logic handles rare exceptions.
-
 Supplier procurement triggers only when the network is short.
-
-RAG tells the agent what policies and contracts allow.
-
-The learned advisor recommends what has worked in similar cases.
-
+RAG provides policy and contract evidence.
 The agent coordinates tools, verifies constraints, and writes a trace.
-
-Evals prove every layer works.
-
-The demo tells the business story.
-
-````
-
-
-
-\---
-
-
-
-\## Target architecture
-
-
-
-Core modules should eventually look like this:
-
-
-
-```text
-
-src/itara/              # shared package root
-
-src/itara/domain/       # domain entities and schema contracts
-
-src/itara/config/       # config loading and validation
-
-src/itara/geo/          # geospatial utilities, GeoJSON, distance matrix
-
-src/itara/sim/          # event generation, simulation, financial loss engine
-
-src/itara/ops/          # warehouse allocation, transfers, procurement, logistics
-
-src/itara/ml/           # forecasting, features, risk detection
-
-src/itara/rag/          # Qdrant indexing and retrieval
-
-src/itara/agent/        # LangGraph flow, tools, decision traces
-
-src/itara/learning/     # contextual bandit, rewards, learned advisor
-
-src/itara/inference/    # model routing, token/cost logging
-
-src/itara/api/          # FastAPI endpoints
-
-apps/web/               # Next.js demo and map visualizer
-
-reports/                # generated evaluation and business reports
-
-data/config/            # static simulation configuration
-
-data/policies/          # RAG policy documents
-
-data/generated/         # generated datasets and simulation outputs
-
-models/                 # trained model artifacts
-
+The learned advisor recommends patterns; it does not bypass verification.
+Evals prove each layer works.
+The demo explains the business outcome.
 ```
 
+## Current phase status
+
+### Phase 1: Static operating world and visual shell
+
+Status: **substantially implemented**.
+
+Implemented backend foundation:
+
+- Python package and CI foundation
+- typed Pydantic domain models
+- configuration loading and validation
+- 15 Ontario stores
+- 1 central warehouse
+- 10 suppliers
+- deterministic 500-SKU catalog with 40 anchor SKUs
+- policy documents and policy loading
+- geospatial utilities
+- generated network nodes and directed distance matrix
+- Phase 1 validation command and tests
+
+Implemented frontend foundation:
+
+- Next.js application under `apps/web`
+- TypeScript, Tailwind, and MapLibre
+- backend-generated network JSON
+- 15 stores, 10 suppliers, and 1 warehouse on the map
+- search and node-type filters
+- clickable markers and popups
+- side-panel selection and scrolling
+- Supplier -> Warehouse relationship overlay
+- Warehouse -> Store relationship overlay
+- two static Store -> Store transfer exception examples
+- independent route toggles
+- operational flow summary
+
+The current map routes are relationship and operating-flow overlays. They are
+not optimized roads, truck routes, dispatch schedules, or recommendations from
+an allocation engine.
+
+### Phase 2: Event-stream simulator and financial loss engine
+
+Status: **started**.
+
+Implemented:
+
+- typed simulator event schemas
+- stable event types
+- validation for quantities, financial values, and key event relationships
+- pure financial loss formulas
+- immutable financial impact summary contract
+- tests for event and financial contracts
+
+Not yet implemented:
+
+- event generator
+- deterministic seeded simulation engine
+- inventory state transitions
+- daily event replay
+- multi-day or four-year generated event streams
+- daily financial impact aggregation
+- baseline-versus-intervention reports
+- generated simulation datasets
+
+### Future phases
+
+The following are planned but not yet implemented:
+
+- Phase 3: demand forecasting and risk detection
+- Phase 4: warehouse allocation, transfer eligibility, and procurement engine
+- Phase 5: FastAPI tools, Qdrant RAG, and policy-grounded agent flow
+- Phase 6: contextual-bandit advisor and token-aware inference routing
+- Phase 7: evals, observability, MLOps, and deployment
+- Phase 8: full interactive demo, launch narrative, and portfolio packaging
+
+Do not describe future phases as implemented.
+
+## Non-negotiable operating assumptions
+
+These rules must not change without explicit user approval:
+
+1. Itara Fresh orders from suppliers in bulk.
+2. Suppliers normally deliver to the central warehouse, not directly to
+   stores.
+3. Store replenishment checks warehouse inventory before supplier
+   procurement.
+4. The warehouse is the normal source of store replenishment.
+5. A store-level demand spike does not automatically trigger supplier
+   procurement.
+6. Supplier purchase orders are network-level decisions.
+7. Store-to-store transfers are rare exceptions, not normal replenishment.
+8. Transfer actions should remain below 2% of replenishment actions unless a
+   documented stress test intentionally changes the guardrail.
+9. Forecasting predicts demand and risk; it does not execute decisions.
+10. The agent must not decide from memory alone. It must use tools, retrieved
+    policy, forecasts, inventory, logistics constraints, financial
+    simulation, and any learned-advisor output.
+11. Routine no-risk cases should use deterministic logic, not LLM calls.
+12. Every savings claim must come from simulation and financial calculations.
+13. Do not hard-code final savings or ROI claims.
+14. Inference cost is part of total business cost.
+15. Public claims must be labeled as modeled unless validated in a real
+    deployment.
 
+## Procurement rule
 
-\---
-
-
-
-\## The 8 implementation phases
-
-
-
-1\. \*\*Operational design, schema, simulation blueprint, and network visualizer skeleton\*\*
-
-2\. \*\*Four-year event-stream simulator and financial loss engine\*\*
-
-3\. \*\*Demand forecasting and risk detection\*\*
-
-4\. \*\*Warehouse allocation, transfer exception, and procurement decision engine\*\*
-
-5\. \*\*Agentic operations layer with MCP-style tools and RAG\*\*
-
-6\. \*\*Learned decision advisor, contextual bandit, and token-aware routing\*\*
-
-7\. \*\*Evals, observability, MLOps, and deployment\*\*
-
-8\. \*\*Interactive demo, launch narrative, and portfolio packaging\*\*
-
-
-
-\---
-
-
-
-\## Agent behavior rules
-
-
-
-The agent should only activate for action-required cases.
-
-
-
-Action-required cases include:
-
-
-
-\* high stockout risk
-
-\* high spoilage risk
-
-\* overstock risk
-
-\* warehouse shortage risk
-
-\* supplier timing risk
-
-\* policy-sensitive decisions
-
-\* high financial exposure
-
-\* uncertainty requiring human review
-
-
-
-The agent can output:
-
-
-
-\* warehouse allocation request
-
-\* warehouse-to-store delivery schedule
-
-\* store-to-store transfer request
-
-\* markdown instruction
-
-\* supplier procurement review trigger
-
-\* supplier purchase order recommendation
-
-\* human escalation ticket
-
-\* no action
-
-
-
-The agent must always save a decision trace.
-
-
-
-\---
-
-
-
-\## Supplier procurement rule
-
-
-
-Supplier procurement is not a store-level action.
-
-
-
-Correct trigger:
-
-
+Supplier procurement is not a store-level action. The intended trigger is:
 
 ```text
-
 network forecast demand
-
-> warehouse available inventory + inbound supplier orders - network safety stock
-
+> warehouse available inventory
+  + inbound supplier orders
+  - network safety stock
 ```
 
-
-
-Then check:
-
-
-
-\* supplier MOQ
-
-\* delivery day
-
-\* lead time
-
-\* supplier availability
-
-\* emergency order terms
-
-\* warehouse capacity
-
-\* shelf-life risk
-
-\* category policy
-
-
-
-\---
-
-
-
-\## Store-to-store transfer rule
-
-
-
-Transfer only if all conditions pass:
-
-
-
-1\. Target store has high stockout risk before warehouse delivery can solve it.
-
-2\. Source store has low forecast demand over the next 7 days.
-
-3\. Source store remains above safety stock after transfer.
-
-4\. Product has sufficient remaining shelf life.
-
-5\. Distance is within allowed radius.
-
-6\. Transfer can happen overnight or in approved delivery window.
-
-7\. Transfer cost is lower than expected avoided loss.
-
-8\. Warehouse allocation cannot solve the issue in time.
-
-
-
-\---
-
-
-
-\## RAG rule
-
-
-
-Qdrant is the default vector database for the main demo because it gives a production-style self-hosted retrieval layer with metadata filtering.
-
-
-
-FAISS may be implemented as an optional local fallback. Do not replace Qdrant as the default without explicit user approval.
-
-
-
-RAG should be used for:
-
-
-
-\* company policy
-
-\* supplier contract terms
-
-\* freshness standards
-
-\* transfer rules
-
-\* markdown rules
-
-\* cold-chain requirements
-
-\* escalation requirements
-
-
-
-RAG should not be used for structured values that belong in tables, such as current stock, MOQ, lead time, delivery day, or store inventory. Those should come from tools/database queries.
-
-
-
-\---
-
-
-
-\## Learned advisor rule
-
-
-
-The first implementation should use a contextual bandit as the learned decision advisor.
-
-
-
-Do not make PPO or CQL required for the first launch. They can be research extensions after the contextual bandit and core agent flow work.
-
-
-
-The learned advisor does not replace the agent. It returns structured recommendation data. The agent must verify that recommendation against policy, logistics, freshness, and financial constraints before execution.
-
-
-
-Example learned advisor output:
-
-
-
-```json
-
-{
-
-&#x20; "recommended\_action": "warehouse\_allocation\_plus\_transfer",
-
-&#x20; "confidence": 0.74,
-
-&#x20; "expected\_savings": 2330.0,
-
-&#x20; "reason\_codes": \[
-
-&#x20;   "target\_stockout\_before\_warehouse\_delivery",
-
-&#x20;   "source\_store\_low\_forecast\_demand",
-
-&#x20;   "transfer\_cost\_below\_lost\_margin"
-
-&#x20; ]
-
-}
-
-```
-
-
-
-\---
-
-
-
-\## Evals required
-
-
-
-Every major layer needs evals.
-
-
-
-Required evaluation categories:
-
-
-
-\* data realism checks
-
-\* forecasting metrics: MAE, RMSE, WAPE, MAPE, bias, directional accuracy
-
-\* risk detection precision/recall
-
-\* decision quality and savings versus baseline
-
-\* transfer rate guardrail
-
-\* policy compliance rate
-
-\* RAG retrieval and faithfulness
-
-\* agent structured-output validity
-
-\* decision trace completeness
-
-\* inference cost and latency
-
-\* business impact and ROI
-
-
-
-\---
-
-
-
-\## Coding standards
-
-
-
-\* Prefer clear, typed Python.
-
-\* Use Pydantic models for domain entities and contracts.
-
-\* Keep simulation logic deterministic when a seed is provided.
-
-\* Do not hard-code final savings numbers.
-
-\* Separate generated data from source code.
-
-\* Keep functions small and testable.
-
-\* Add tests with each meaningful change.
-
-\* Avoid hidden external API dependencies in core tests.
-
-\* No secrets in code.
-
-\* Prefer small, bounded pull-style changes over huge edits.
-
-\* Keep public claims clearly labeled as modeled unless validated in real deployment.
-
-
-
-\---
-
-
-
-\## Codex repo scanning rule
-
-
-
-Do not scan the entire repository on every prompt.
-
-
-
-Preferred workflow:
-
-
-
-1\. Read this file first.
-
-2\. Read the user prompt carefully.
-
-3\. Identify the smallest relevant area of the repo.
-
-4\. Use targeted commands such as:
-
-
-
-```bash
-
-rg "keyword" path/to/relevant/area
-
-ls path/to/relevant/area
-
-sed -n '1,220p' path/to/file.py
-
-```
-
-
-
-5\. Avoid broad repo scans unless necessary.
-
-6\. If broader context is needed, explain why.
-
-7\. Summarize what files were inspected before making changes.
-
-
-
-Avoid unless explicitly needed:
-
-
-
-```bash
-
-find . -type f
-
-rg "" .
-
-cat large\_file
-
-```
-
-
-
-\---
-
-
-
-\## Git workflow
-
-
-
-Before changing files:
-
-
-
-```bash
-
-git status --short
-
-```
-
-
-
-After code changes:
-
-
-
-```bash
-
-ruff format src tests
-
-ruff check src tests
-
-mypy src
-
-pytest -q
-
-```
-
-
-
-For frontend changes under `apps/web`, run the relevant frontend checks once the app exists:
-
-
-
-```bash
-
-npm run lint
-
-npm run build
-
-```
-
-
-
-When asked to commit and push, only do so after checks pass or after clearly reporting why a check could not be run.
-
-
-
-Commit messages should be clear and specific, for example:
-
-
+Then verify supplier MOQ, delivery day, lead time, supplier availability,
+emergency terms, warehouse capacity, shelf-life risk, and category policy.
+
+## Transfer exception rule
+
+A store-to-store transfer may be recommended only when all relevant conditions
+pass:
+
+1. The target store has high stockout risk before warehouse delivery can solve
+   it.
+2. The source store has low forecast demand over the next seven days.
+3. The source remains above safety stock after transfer.
+4. The product has sufficient remaining shelf life.
+5. Distance is within the allowed radius.
+6. The transfer fits an approved delivery window.
+7. Transfer cost is lower than expected avoided loss.
+8. Warehouse allocation cannot solve the issue in time.
+
+## RAG and learned-advisor rules
+
+Qdrant is the planned default vector database for the main demo. FAISS may be
+an optional local fallback, but must not replace Qdrant as the default without
+user approval.
+
+Use RAG for unstructured evidence such as:
+
+- company policy
+- supplier contract terms
+- freshness standards
+- transfer rules
+- markdown rules
+- cold-chain requirements
+- escalation requirements
+
+Do not use RAG for structured current values such as stock, MOQ, lead time,
+delivery day, or store inventory. Those values must come from validated
+configuration, simulation state, database queries, or tools.
+
+The first learned advisor should be a contextual bandit. PPO and CQL are
+optional research extensions, not launch requirements. The advisor returns a
+structured recommendation; the decision layer must still verify policy,
+logistics, freshness, and financial constraints.
+
+## Architecture and folder map
 
 ```text
+src/itara/
+  domain/       # Pydantic domain entities and shared contracts
+  config/       # configuration loading and validation
+  geo/          # distances, network nodes, and generated map artifacts
+  sim/          # event contracts, future simulator, and financial formulas
+  ops/          # future allocation, transfer, procurement, and logistics logic
+  ml/           # future features, forecasting, and risk detection
+  rag/          # policy loading and future Qdrant retrieval
+  agent/        # future tools, orchestration, and decision traces
+  learning/     # future contextual bandit, rewards, and learned advisor
+  inference/    # future model routing and token/cost logging
+  api/          # future FastAPI endpoints
+  utils/        # shared utilities
 
-Add project planning and operating guide
+apps/web/
+  src/app/        # Next.js routes and page shell
+  src/components/ # map and visualizer components
+  src/data/       # generated network JSON and TypeScript contracts
 
-Add Phase 1 schema foundation
+data/
+  config/       # static network and SKU configuration
+  policies/     # retrieval-ready policy documents
+  generated/    # reproducible generated artifacts and future simulation output
 
-Add network geospatial config
-
-Add network visualizer skeleton
-
+docs/           # project plan, checkpoints, and design documentation
+reports/        # future generated evaluation and business reports
+models/         # future trained model artifacts
+tests/          # deterministic backend tests
 ```
 
-
-
-\---
-
-
-
-\## Documentation update rule
-
-
-
-If a major project decision changes, ask whether `AGENTS.md` and/or `docs/project\_plan.md` should be updated so future Codex sessions do not lose the decision.
-
-
-
-Major changes include:
-
-
-
-\* data model changes
-
-\* operating flow changes
-
-\* new agent roles
-
-\* new policy logic
-
-\* new evaluation metrics
-
-\* new phase boundaries
-
-\* new directory structure
-
-\* changes to warehouse, supplier, or store assumptions
-
-\* changes to how RL/bandit is used
-
-\* changes to model routing or inference-cost logic
-
-\* changes to demo narrative or public claims
-
-
-
-\---
-
-
-
-\## Demo rules
-
-
-
-The demo should start with business outcome, not architecture.
-
-
-
-Demo story:
-
-
-
-1\. Press-release style result
-
-2\. Before vs after losses
-
-3\. Map-based network simulator
-
-4\. Agent decision replay
-
-5\. Future planning console
-
-6\. Engineering observability
-
-
-
-Historical 2024-2025 agent decisions should be precomputed and saved. The live demo should activate the agent only for selected cases or small batches.
-
-
-
-The map-based simulator should eventually allow the user to:
-
-
-
-\* select a date
-
-\* see all stores, warehouse, and suppliers
-
-\* click a store to view inventory and daily action summary
-
-\* click the warehouse to view available-to-allocate inventory and inbound deliveries
-
-\* click a supplier to view products supplied and next delivery schedule
-
-\* view warehouse allocation flows
-
-\* view store-to-store transfer exceptions
-
-\* view policy-grounded agent decisions
-
-\* view expected and actual financial impact
-
-
-
-\---
-
-
-
-\## Network visualizer data contract
-
-
-
-The frontend should initially use mock data shaped like future API responses.
-
-
-
-Planned endpoints:
-
-
-
-```text
-
-GET /api/network/nodes
-
-GET /api/network/distance-matrix
-
-GET /api/network/state?date=YYYY-MM-DD
-
-GET /api/stores/{store\_id}/inventory?date=YYYY-MM-DD
-
-GET /api/stores/{store\_id}/actions?date=YYYY-MM-DD
-
-GET /api/warehouse/state?date=YYYY-MM-DD
-
-GET /api/suppliers/{supplier\_id}/schedule?date=YYYY-MM-DD
-
-GET /api/decisions?date=YYYY-MM-DD\&store\_id=...
-
-```
-
-
-
-Recommended TypeScript node shape:
-
-
-
-```ts
-
-export type NetworkNodeType = "store" | "warehouse" | "supplier";
-
-
-
-export interface NetworkNode {
-
-&#x20; id: string;
-
-&#x20; type: NetworkNodeType;
-
-&#x20; name: string;
-
-&#x20; latitude: number;
-
-&#x20; longitude: number;
-
-&#x20; region?: string;
-
-&#x20; categoryCoverage?: string\[];
-
-&#x20; metadata: Record<string, string | number | boolean | string\[]>;
-
-}
-
-```
-
-
-
-Recommended inventory summary shape:
-
-
-
-```ts
-
-export interface InventorySummary {
-
-&#x20; date: string;
-
-&#x20; nodeId: string;
-
-&#x20; totalSkus: number;
-
-&#x20; healthySkus: number;
-
-&#x20; stockoutRiskSkus: number;
-
-&#x20; spoilageRiskSkus: number;
-
-&#x20; overstockRiskSkus: number;
-
-&#x20; topItems: Array<{
-
-&#x20;   skuId: string;
-
-&#x20;   skuName: string;
-
-&#x20;   category: string;
-
-&#x20;   onHandUnits: number;
-
-&#x20;   daysOfCover: number;
-
-&#x20;   riskLevel: "low" | "medium" | "high";
-
-&#x20; }>;
-
-}
-
-```
-
-
-
-\---
-
-
-
-\## Communication style for Codex responses
-
-
-
-When reporting back to the user:
-
-
-
-\* be direct
-
-\* explain what changed
-
-\* list files changed
-
-\* list tests run
-
-\* include exact PowerShell commands when the user needs to run something
-
-\* if something fails, report the error and likely fix
-
-\* if context should be saved to `AGENTS.md`, ask the user first
-
-
-
-\---
-
-
-
-\## Current Phase 1 milestone order
-
----
-
-## Production-ready engineering principles
-
-This project must be written as production-grade software, not as a notebook experiment or throwaway demo.
-
-### Architecture rules
-
-- Use separation of concerns.
-- Keep UI, business logic, data access, simulation logic, and agent orchestration separate.
-- Use layered architecture where appropriate.
-- Domain models should not depend on infrastructure code.
-- Simulation logic should not depend on frontend code.
-- Agent logic should call tools/contracts, not reach directly into unrelated modules.
-- Avoid circular dependencies.
-- Prefer clear module boundaries over large utility files.
-
-Recommended backend layering:
-
-```text
-domain models and contracts
-        ↓
-configuration and validation
-        ↓
-simulation / operations / ML services
-        ↓
-agent tools and orchestration
-        ↓
-API layer
-        ↓
-frontend
-Function and module rules
-One function should do one thing.
-One module should have one clear responsibility.
-Prefer small functions.
-Use guard clauses to avoid deeply nested logic.
-Avoid boolean flag parameters when enums or named functions are clearer.
-Avoid hidden side effects in calculation functions.
-Pure calculation functions should not log, mutate global state, or call external services.
-Do not over-engineer abstractions before the need is real.
-Naming rules
-Use clear, descriptive names.
-Avoid abbreviations like tmp, val, obj, d, or misc.
-Boolean names should start with is_, has_, can_, or should_.
-Constants should use SCREAMING_SNAKE_CASE.
-Function names should describe the action, for example calculate_transfer_cost or load_store_config.
-A function name must not lie. A function named get_* should not mutate data.
-Error handling rules
-Never swallow errors silently.
-Validate inputs at system boundaries.
-Fail fast when data is invalid.
-Use meaningful custom exceptions when the default exception would be unclear.
-Error messages should explain what failed and what value caused the failure when safe to do so.
-Do not expose secrets or sensitive information in errors.
-Security rules
-Never commit secrets.
-Never commit .env.
-Use .env.example for required environment variables.
-Validate all external input.
-Do not log passwords, tokens, API keys, or sensitive personal data.
-Public APIs must eventually include rate limiting, health checks, and safe error responses.
-Use least privilege for external services and credentials.
-Testing rules
-Add tests with every meaningful change.
-Unit-test business logic and deterministic simulation logic.
-Test edge cases, not only happy paths.
-Tests should read like specifications.
-Use integration tests for API endpoints once the API exists.
-Keep tests deterministic by controlling seeds and avoiding live external services in CI.
-Business-critical paths should target strong coverage, with a practical goal of 80%+ coverage later.
-Git and code hygiene rules
-Keep commits atomic.
-One commit should represent one logical change.
-Use clear commit messages.
-Do not commit generated heavy artifacts unless explicitly required.
-Do not commit secrets, credentials, or local environment files.
-Run formatting, linting, type checking, and tests before commit.
-Do not push broken code unless explicitly instructed and clearly documented.
-
-Preferred local checks for backend changes:
-
+Respect module boundaries:
+
+- domain models must not depend on infrastructure or frontend code
+- simulation logic must not depend on the frontend
+- pure financial functions must not log or mutate state
+- agent logic must use tools/contracts rather than reaching into unrelated
+  modules
+- API code should translate between external requests and internal services
+- frontend code should consume stable contracts rather than duplicate business
+  logic
+
+When working under `apps/web`, also read and follow `apps/web/AGENTS.md`. A
+deeper `AGENTS.md` overrides this file for its subtree when rules conflict.
+
+## Coding standards
+
+- Prefer clear, typed Python.
+- Use Pydantic models for domain and boundary contracts.
+- Use enums for stable event, action, risk, and status values.
+- Keep modules focused and functions small.
+- Use guard clauses instead of deep nesting.
+- Validate inputs at system boundaries and fail fast.
+- Use meaningful error messages that name the invalid field.
+- Never swallow errors silently.
+- Keep pure calculations free of logging, global mutation, and I/O.
+- Keep simulation deterministic whenever a seed is provided.
+- Avoid hidden randomness and live external services in core tests.
+- Separate generated data from source code.
+- Do not commit heavy generated artifacts unless explicitly requested.
+- Do not add dependencies without a clear need.
+- Never commit secrets, credentials, `.env`, or private tokens.
+- Add tests with every meaningful behavioral change.
+- Test edge cases and invalid inputs, not only happy paths.
+- Comment the reason for non-obvious logic, not the obvious mechanics.
+- Keep public functions and important contracts documented.
+- Avoid unrelated refactors and formatting churn.
+- Keep changes bounded to the requested ownership area.
+
+## Required checks
+
+Run from the repository root for backend or cross-cutting changes:
+
+```powershell
 ruff format src tests
 ruff check src tests
 mypy src
 pytest -q
+```
 
-Preferred checks for frontend changes once apps/web exists:
+Phase 1 validation can also be run when network/configuration contracts change:
 
+```powershell
+python -c "from itara.validation import main; main()"
+```
+
+Run from `apps/web` for frontend changes:
+
+```powershell
 npm run lint
 npm run build
-Documentation rules
-Comment the why, not the obvious what.
-Public functions and important contracts should have docstrings.
-README must stay useful for setup, architecture, and running checks.
-Major design decisions should be recorded as ADRs under docs/decisions/.
-If implementation changes the project direction, update AGENTS.md and docs/project_plan.md.
-Observability rules
-Add structured logging when runtime workflows begin.
-Use appropriate log levels.
-Never log sensitive data.
-API services should eventually expose a health endpoint.
-Important operations should eventually report latency, error rate, throughput, and decision counts.
-Agent decisions must be traceable and auditable.
-Performance hygiene rules
-Avoid unbounded loops over large datasets when vectorized or batched operations are appropriate.
-Avoid repeated expensive calculations when cached/generated artifacts are appropriate.
-Do not calculate the distance matrix repeatedly during simulation; generate and reuse it.
-Paginate or chunk large datasets in APIs and reports.
-Keep token-heavy LLM calls away from routine deterministic cases.
-Golden rule
-
-Write code for the person who reads it next. That person is usually the project owner months later under pressure.
-
-1\. \*\*Milestone 1A — Repo foundation\*\*
-
-
-
-&#x20;  \* documentation foundation
-
-&#x20;  \* Python package scaffold
-
-&#x20;  \* `pyproject.toml`
-
-&#x20;  \* GitHub Actions CI
-
-&#x20;  \* basic tests
-
-
-
-2\. \*\*Milestone 1B — Domain model and schemas\*\*
-
-
-
-&#x20;  \* Pydantic domain models
-
-&#x20;  \* ERD
-
-&#x20;  \* schema validation tests
-
-&#x20;  \* relationship validation tests
-
-
-
-3\. \*\*Milestone 1C — Network config and geospatial foundation\*\*
-
-
-
-&#x20;  \* 15 stores
-
-&#x20;  \* warehouse
-
-&#x20;  \* suppliers with coordinates
-
-&#x20;  \* network GeoJSON
-
-&#x20;  \* distance matrix
-
-&#x20;  \* geospatial tests
-
-
-
-4\. \*\*Milestone 1D — SKU catalog and generation\*\*
-
-
-
-&#x20;  \* category templates
-
-&#x20;  \* 40 anchor SKUs
-
-&#x20;  \* deterministic SKU generator
-
-&#x20;  \* 500-SKU generated catalog
-
-&#x20;  \* margin and shelf-life tests
-
-
-
-5\. \*\*Milestone 1E — Policy skeletons\*\*
-
-
-
-&#x20;  \* parameter-aligned policy documents
-
-&#x20;  \* metadata front matter
-
-&#x20;  \* policy loading tests
-
-
-
-6\. \*\*Milestone 1F — Network visualizer skeleton\*\*
-
-
-
-&#x20;  \* Next.js app under `apps/web`
-
-&#x20;  \* MapLibre map
-
-&#x20;  \* entity markers
-
-&#x20;  \* date selector placeholder
-
-&#x20;  \* entity detail panel
-
-&#x20;  \* mock network state
-
-&#x20;  \* frontend lint/build checks
-
-
-
-7\. \*\*Milestone 1G — Phase 1 validation\*\*
-
-
-
-&#x20;  \* final docs check
-
-&#x20;  \* CI check
-
-&#x20;  \* repo hygiene check
-
-&#x20;  \* confirm Phase 1 exit criteria
-
-
-
-````
-
+```
+
+For manual frontend verification:
+
+```powershell
+npm run dev
+```
+
+Then open:
+
+```text
+http://localhost:3000
+```
+
+Do not report a check as passing unless it was actually run. If a check cannot
+run, report the exact failure and likely remediation.
+
+## Git and push rules
+
+1. Run `git status --short` before editing.
+2. Preserve unrelated user changes in a dirty worktree.
+3. Stage only files relevant to the requested change.
+4. Keep commits atomic: one logical change per commit.
+5. Use clear, specific commit messages.
+6. Run the relevant required checks before committing.
+7. Do not push broken code unless the user explicitly instructs it and the
+   failure is documented.
+8. Do not rewrite history, force-push, or use destructive reset commands unless
+   explicitly requested.
+9. When asked to commit and push, confirm the final branch and worktree state.
+
+Example commit messages:
+
+```text
+Add simulator event schemas
+Add financial loss calculation foundation
+Add supplier inbound route overlay
+Restore project operating guide
+```
+
+## Codex context-management rules
+
+1. Read this file before making changes.
+2. Read the user request carefully and classify it as backend, frontend,
+   documentation, or cross-cutting.
+3. Inspect the smallest relevant area first.
+4. Use targeted commands such as:
+
+   ```powershell
+   rg "keyword" path\to\relevant\area
+   Get-ChildItem path\to\relevant\area
+   Get-Content path\to\file
+   ```
+
+5. Do not scan the entire repository on every prompt.
+6. Avoid broad commands such as recursive dumps of every file unless the task
+   genuinely requires repository-wide analysis.
+7. If broader context is needed, explain why before expanding the scan.
+8. Summarize the files inspected before making substantial edits.
+9. Do not rewrite unrelated files.
+10. Do not infer that an empty module directory means a feature is implemented.
+11. Distinguish current implementation, scaffolding, and future plans in code,
+    documentation, and user-facing reports.
+12. Preserve the warehouse-first, network-procurement, rare-transfer, and
+    modeled-savings rules.
+13. Keep a task within the requested phase unless the user approves a phase or
+    architecture change.
+14. Do not jump to LangGraph, RAG infrastructure, or RL before the simulator,
+    financial engine, forecasting, and deterministic decision baseline are
+    ready.
+15. Report changed files, checks run, failures, and final git status directly.
+
+## Documentation and decision updates
+
+Major user-approved decisions must not be left only in chat history.
+
+Ask whether to update `AGENTS.md`, `docs/project_plan.md`, and/or an ADR under
+`docs/decisions/` when a decision changes:
+
+- operating flow
+- domain or API contracts
+- warehouse, supplier, store, or SKU assumptions
+- procurement or transfer policy
+- evaluation metrics
+- phase boundaries
+- directory structure
+- agent roles or tool boundaries
+- RAG provider or retrieval rules
+- contextual-bandit or RL placement
+- inference routing or token-cost logic
+- demo narrative or public claims
+
+After the user approves the decision, update the relevant documentation in the
+same focused change or the next explicitly requested documentation change.
+
+## Current next work
+
+The recommended sequence from the current repository state is:
+
+1. Add a deterministic daily simulator state model.
+2. Implement seeded generation for a small, bounded event window.
+3. Apply events to inventory state transitions.
+4. Aggregate daily financial impact from events.
+5. Add realism and invariant checks for generated operations.
+6. Expand carefully toward the four-year 2022-2025 replay.
+7. Build forecasting training tables and baseline forecasts.
+8. Add risk detection.
+9. Build deterministic warehouse-first allocation logic.
+10. Add transfer eligibility and network procurement logic.
+11. Introduce API, RAG, and agent tooling only after those foundations are
+    tested.
+
+Do not create huge generated datasets during early simulator work. Start with
+small deterministic samples and scale only after contracts and invariants are
+stable.
+
+## Evaluation expectations
+
+Every major layer requires evidence:
+
+- data realism and invariant checks
+- forecasting MAE, RMSE, WAPE, MAPE, bias, and directional accuracy
+- risk detection precision and recall
+- decision quality and modeled savings versus baseline
+- transfer-rate guardrail
+- policy compliance
+- RAG retrieval quality and faithfulness
+- structured agent output validity
+- decision-trace completeness
+- inference cost and latency
+- modeled business impact and ROI
+
+## Honesty and communication rules
+
+Use precise language about project maturity.
+
+Accurate examples:
+
+```text
+Implemented simulator event schemas.
+Implemented the financial formula foundation.
+Added static operating-flow route overlays.
+Started Phase 2 simulator work.
+```
+
+Do not claim:
+
+```text
+Built the full four-year simulator.
+Optimized delivery routes.
+Proved real-world savings.
+Implemented the production agent.
+Implemented reinforcement learning.
+```
+
+When reporting to the user:
+
+- be direct
+- explain what changed
+- list modified files
+- list checks run
+- report failures and likely fixes
+- provide exact PowerShell commands when the user must run something
+- state whether changes were committed and pushed
+
+The guiding rule is: write code and documentation for the project owner who
+will return months later and need to understand the system quickly and safely.
