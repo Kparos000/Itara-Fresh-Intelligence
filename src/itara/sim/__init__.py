@@ -27,6 +27,10 @@ from itara.sim.financials import (
     calculate_transfer_cost,
 )
 from itara.sim.impact import summarize_daily_financial_impact
+from itara.sim.reports import (
+    run_baseline_smoke_report,
+    write_baseline_smoke_report,
+)
 
 __all__ = [
     "BaseEvent",
@@ -50,7 +54,9 @@ __all__ = [
     "calculate_spoilage_loss",
     "calculate_stockout_lost_margin",
     "calculate_transfer_cost",
+    "run_baseline_smoke_report",
     "simulate_baseline_day",
     "summarize_daily_financial_impact",
     "summarize_events_by_type",
+    "write_baseline_smoke_report",
 ]
