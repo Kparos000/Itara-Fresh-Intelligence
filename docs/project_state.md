@@ -1,0 +1,445 @@
+# Itara Fresh Intelligence Project State
+
+Last updated: 2026-07-08
+
+This is the living project state report for Itara Fresh Intelligence. It should
+be treated as a practical handoff document for understanding what the
+repository currently implements, what remains planned, and what should be built
+next.
+
+## Project mission
+
+Itara Fresh Intelligence is an operations-first replenishment intelligence
+system for a fresh grocery network.
+
+The system is intended to answer:
+
+> What fresh inventory should move where, when, why, and with what modeled
+> financial impact?
+
+The project is not a generic AI-agent demo. It is a business-loss reduction
+system whose recommendations must be grounded in operational data,
+deterministic logic, policy, logistics constraints, and modeled financial
+outcomes.
+
+## End goal
+
+The intended end state is a replayable operating system for a simulated fresh
+grocery network that can:
+
+- define stores, warehouse, suppliers, SKUs, policy, logistics, and distances
+- simulate operating history from 2022 through 2025
+- calculate spoilage loss, stockout lost margin, markdown margin loss,
+  transfer cost, holding cost, inference cost, and net loss
+- forecast demand and detect operational risk
+- allocate warehouse inventory before considering other actions
+- use store-to-store transfers only as rare, policy-constrained exceptions
+- trigger supplier procurement only for network-level shortages
+- use RAG for unstructured policy and contract evidence
+- use agentic reasoning only for action-required, policy-sensitive, uncertain,
+  or high-exposure cases
+- verify recommendations against inventory, freshness, logistics, policy, and
+  financial constraints
+- save explainable decision traces
+- later add a contextual-bandit advisor and token-aware inference routing
+- present the operating story through a map-based console and modeled business
+  impact narrative
+
+No real-world savings have been proven yet. Any future public savings or ROI
+claim must come from simulation and financial calculations and must be labeled
+as modeled unless validated in a real deployment.
+
+## Current phase
+
+The repository is in Phase 2: early simulator and financial-loss foundation.
+
+Phase 1 is substantially complete. Phase 2 has started and now includes event
+schemas, financial loss formulas, a bounded deterministic baseline day
+simulator, a daily financial impact summarizer, and a baseline smoke report.
+
+The repository does not yet contain the full four-year simulator, a real
+inventory state transition engine, demand forecasting, risk detection,
+allocation logic, procurement logic, Qdrant indexing, agent orchestration, or
+learned decision support.
+
+## Completed Phase 1 work
+
+Phase 1 established the static operating world and the visual shell.
+
+Implemented backend foundation:
+
+- Python package and quality tooling configured through `pyproject.toml`
+- strict pytest, ruff, and mypy setup
+- typed Pydantic domain models for stores, warehouse, suppliers, SKUs,
+  inventory batches, map nodes, distance rows, daily inventory snapshots, and
+  future decision traces
+- static configuration for 15 Ontario stores
+- static configuration for 1 central warehouse
+- static configuration for 10 suppliers
+- deterministic 500-SKU catalog generation with 40 named anchor SKUs
+- policy Markdown documents for replenishment, transfer exceptions, supplier
+  procurement, markdowns, and human escalation
+- policy loading utilities for Markdown policy documents
+- geospatial/network artifact foundation documented and validated by tests
+- generated network artifacts consumed by the frontend
+- Phase 1 validation command and tests
+
+Implemented frontend foundation:
+
+- Next.js app under `apps/web`
+- TypeScript, Tailwind, and MapLibre-based network visualizer
+- backend-generated network JSON consumed by the frontend
+- map rendering for 15 stores, 10 suppliers, and 1 warehouse
+- node search and node-type filters
+- clickable markers and popups
+- side-panel node selection and scrolling
+- supplier-to-warehouse relationship overlay
+- warehouse-to-store relationship overlay
+- two static store-to-store transfer exception examples
+- independent route toggles
+- operational flow summary
+
+Current visual routes are relationship and operating-flow overlays. They are
+not optimized routes, dispatch schedules, allocation recommendations, or
+policy-verified transfer decisions.
+
+## Completed Phase 2 work
+
+Implemented Phase 2 foundation:
+
+- stable simulator event types
+- immutable Pydantic event contracts for sales, warehouse receipts, warehouse
+  allocations, store deliveries, inventory counts, spoilage, stockouts,
+  markdowns, store transfers, supplier delays, and supplier short shipments
+- validation for positive quantities, non-negative financial values, markdown
+  price constraints, distinct transfer stores, and short-shipment quantities
+- pure financial formulas for spoilage loss, stockout lost margin, markdown
+  margin loss, transfer cost, holding cost, and net loss
+- immutable `FinancialImpactSummary` contract that validates net loss equals
+  the sum of its components
+- small deterministic baseline day simulator
+- event type summarizer
+- daily financial impact summarizer for supported loss event types
+- bounded multi-day baseline smoke report
+- tests for simulator events, financial formulas, baseline simulation, daily
+  impact aggregation, and smoke report output
+
+## Current backend modules
+
+`src/itara/domain/`
+
+- Defines the core domain contracts and enums.
+- Includes stores, warehouse, suppliers, SKUs, inventory batches, map nodes,
+  daily inventory snapshots, and future agent decision traces.
+- Includes deterministic SKU catalog generation.
+- Does not execute simulation, forecasting, allocation, procurement, or agent
+  decisions.
+
+`src/itara/sim/`
+
+- Defines simulator event contracts in `events.py`.
+- Defines pure financial formulas and `FinancialImpactSummary` in
+  `financials.py`.
+- Provides a small deterministic baseline event stream in `baseline.py`.
+- Aggregates supported event types into daily modeled financial impact in
+  `impact.py`.
+- Produces a bounded Markdown smoke report in `reports.py`.
+- Does not yet apply events to inventory state, generate full operating
+  streams, run a four-year replay, or compare baseline versus intervention.
+
+`src/itara/rag/`
+
+- Loads Markdown policy documents from `data/policies`.
+- Extracts policy IDs, titles, content, paths, and word counts.
+- Provides lookup by policy ID.
+- Does not yet chunk, embed, index, retrieve, or use Qdrant.
+
+`data/config/`
+
+- Stores the static operating configuration for stores, suppliers, and the
+  warehouse.
+- Includes receiving windows, store personas, supplier lead times, delivery
+  days, reliability assumptions, emergency delivery fields, warehouse dispatch
+  settings, category capacity, and transfer cost assumptions.
+
+`data/policies/`
+
+- Contains the current retrieval-ready policy Markdown source documents:
+  replenishment, store transfer exception, supplier procurement, markdown, and
+  human escalation.
+- These are source policy documents only. They are not yet indexed into a
+  vector database.
+
+## Current frontend features
+
+The frontend currently provides a static operating-world visualizer.
+
+Implemented:
+
+- network map using MapLibre
+- OpenStreetMap raster tile base map
+- colored markers for warehouse, stores, and suppliers
+- marker popups with node type, name, region, coordinates, categories, and ID
+- selected-node fly-to behavior
+- search across node ID, name, type, region, and category coverage
+- filters for all nodes, warehouse, stores, and suppliers
+- side-panel cards grouped by warehouse, stores, and suppliers
+- visible counts for filtered nodes
+- route overlays for supplier inbound routes, warehouse outbound routes, and
+  static transfer exception examples
+- independent toggles for each route overlay
+- metric cards for network summary values
+
+Not implemented in the frontend:
+
+- date-driven network replay
+- SKU-level inventory state
+- simulated daily events on the map
+- financial loss overlays
+- forecast or risk overlays
+- generated allocation recommendations
+- policy-verified transfer recommendations
+- supplier procurement warnings
+- agent tool calls, policy citations, or decision traces
+- API-backed live state
+
+## Current simulator capability
+
+The simulator can currently generate a small deterministic baseline event stream
+for one simulated day through `simulate_baseline_day`.
+
+Current scope:
+
+- fixed stores: `store_001` and `store_004`
+- fixed SKUs: `sku_0001` and `sku_0002`
+- fixed warehouse: `warehouse_001`
+- deterministic random values when a seed is provided
+- stable event IDs derived from simulation date and sequence
+- generated event types: sales, one stockout, one spoilage event, one markdown,
+  and inventory counts for the two stores and the warehouse
+- deterministic event count by type for the default day:
+  - `sale`: 4
+  - `stockout`: 1
+  - `spoilage`: 1
+  - `markdown`: 1
+  - `inventory_count`: 6
+
+This is a smoke-test simulator foundation. It is not the full operations
+simulator and does not yet model real inventory movement, expiry by batch,
+warehouse receipts, allocation state, delivery execution, supplier variability,
+or four-year replay.
+
+## Current financial calculation capability
+
+The financial layer can calculate:
+
+- spoilage loss as expired units multiplied by unit cost
+- stockout lost margin as unmet demand units multiplied by retail price and
+  gross margin percentage
+- markdown margin loss as markdown units multiplied by margin reduction per
+  unit
+- transfer cost as fixed handling cost plus distance cost
+- holding cost as excess inventory units multiplied by unit cost and daily
+  holding rate
+- net loss as the sum of spoilage loss, stockout lost margin, markdown margin
+  loss, transfer cost, holding cost, and inference cost
+
+The formulas validate that inputs are finite and non-negative. Stockout gross
+margin percentage must not exceed 1. `FinancialImpactSummary` rejects summaries
+where `net_loss` does not equal the sum of all components.
+
+Daily impact aggregation currently summarizes spoilage, stockout, markdown, and
+store-transfer events. Holding cost and inference cost are present in the
+summary contract but are currently set to zero by the daily event summarizer.
+
+## Current smoke report capability
+
+The repository can produce a small deterministic Markdown smoke report through
+`run_baseline_smoke_report`.
+
+The report currently includes:
+
+- report title
+- explicit statement that the result is a smoke test, not optimized operations
+  or savings
+- simulation start date
+- simulation end date
+- simulated day count
+- initial seed
+- total event count
+- event count by type
+- total spoilage loss
+- total stockout lost margin
+- total markdown margin loss
+- total transfer cost
+- total holding cost
+- total inference cost
+- total modeled net loss
+
+For the tested seven-day smoke window starting 2022-01-03 with seed 42, tests
+expect 91 total events.
+
+This report is useful as a wiring check. It is not an annual loss report, a
+baseline-versus-intervention report, or evidence of savings.
+
+## What is not built yet
+
+The following are planned but not implemented:
+
+- full deterministic event generator across the network
+- daily inventory state transition engine
+- batch-level freshness and expiry transitions
+- warehouse receipt generation from supplier schedules
+- warehouse allocation and delivery state transitions
+- supplier delay and short-shipment generation in baseline flows
+- generated multi-day operating datasets beyond the bounded smoke path
+- four-year 2022-2025 replay
+- annual baseline loss reports
+- counterfactual baseline-versus-intervention reports
+- demand forecasting
+- forecasting training tables
+- risk detection
+- deterministic warehouse-first allocation engine
+- transfer eligibility engine
+- network-level supplier procurement engine
+- transfer-rate guardrail evaluation
+- FastAPI endpoints
+- Qdrant indexing and retrieval
+- policy-grounded agent workflow
+- decision trace persistence beyond the domain contract
+- contextual bandit or other learned advisor
+- token-aware inference routing
+- deployment stack
+- production observability
+- public demo narrative backed by modeled results
+
+## Where RL/contextual bandit fits later
+
+The first learned advisor should be a contextual bandit, not PPO or CQL.
+
+It belongs after:
+
+1. simulator contracts are stable
+2. inventory state transitions are implemented
+3. financial impact calculations are credible
+4. baseline-versus-intervention comparisons exist
+5. forecasting and risk detection are working
+6. deterministic warehouse allocation, transfer eligibility, and procurement
+   checks are implemented
+7. policy and logistics verification are enforced
+
+The learned advisor should return a structured recommendation or ranking. It
+must not bypass deterministic verification, policy checks, freshness checks,
+logistics constraints, financial simulation, or human escalation rules. PPO and
+CQL remain optional research extensions, not launch requirements.
+
+## Next recommended milestones
+
+Recommended near-term sequence:
+
+1. Add a deterministic daily simulator state model.
+2. Apply sale, spoilage, markdown, receipt, allocation, delivery, and transfer
+   events to inventory state transitions.
+3. Add invariant checks for non-negative inventory, event consistency, and
+   freshness constraints.
+4. Expand the baseline generator from the tiny smoke sample to a bounded
+   multi-store, multi-SKU window.
+5. Generate warehouse receipt, allocation, store delivery, supplier delay, and
+   supplier short-shipment events in controlled baseline flows.
+6. Aggregate daily financial impact from generated event streams.
+7. Write bounded baseline reports from generated simulation output.
+8. Add realism checks before scaling toward four years.
+9. Build forecasting tables and simple baseline forecasts.
+10. Add risk detection.
+11. Build warehouse-first allocation logic.
+12. Add transfer eligibility and network procurement logic.
+13. Introduce API, RAG, and agent tooling only after the deterministic
+    simulator and decision baseline are tested.
+
+Do not create huge generated datasets yet. Keep samples small and deterministic
+until contracts, transitions, and invariants are stable.
+
+## Latest known repo state
+
+This section was generated from the repository before this report was committed.
+
+Latest `git log --oneline -10`:
+
+```text
+6033e7c Add baseline simulation smoke report
+c7eed49 Summarize daily financial impact from events
+05be30b Add baseline daily simulator skeleton
+e16f6bb Restore project operating guide
+931d771 Add financial loss calculation foundation
+957a20d Add simulator event schemas
+7c38af1 Document Phase 1 visualizer checkpoint
+0e5cd4a Add transfer exception route overlay
+8ab407a Add supplier inbound route overlay
+560ee02 Add operational flow summary to visualizer
+```
+
+Latest pytest result observed while preparing this report:
+
+```text
+94 passed
+```
+
+Latest Phase 1 validation summary:
+
+```json
+{
+  "distance_matrix_entry_count": 650,
+  "network_node_count": 26,
+  "passed": true,
+  "policy_document_count": 5,
+  "product_category_count": 8,
+  "sku_count": 500,
+  "store_count": 15,
+  "supplier_count": 10,
+  "warehouse_count": 1
+}
+```
+
+## How to test current state
+
+Run backend checks from the repository root:
+
+```powershell
+ruff format src tests
+ruff check src tests
+mypy src
+pytest -q
+```
+
+Run Phase 1 validation from the repository root:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -c "from itara.validation import main; main()"
+```
+
+Run frontend checks from `apps/web`:
+
+```powershell
+cd apps/web
+npm run lint
+npm run build
+cd ../..
+```
+
+Print the current baseline smoke report from the repository root:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -c "from datetime import date; from itara.sim import run_baseline_smoke_report; print(run_baseline_smoke_report(date(2022, 1, 3), days=7, seed=42))"
+```
+
+## Update rule
+
+This file must be updated after every successful implementation prompt.
+
+When the repository gains a meaningful implemented capability, update this
+report in the same change or in the next focused documentation change. Keep it
+honest: clearly separate implemented behavior from scaffolding and future
+plans, and do not claim savings until they come from simulation and financial
+calculations.
