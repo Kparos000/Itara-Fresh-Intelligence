@@ -35,21 +35,31 @@ from itara.sim.reports import (
     run_baseline_smoke_report,
     write_baseline_smoke_report,
 )
+from itara.sim.state import (
+    InventoryPosition,
+    NetworkDailyInventoryState,
+    StoreDailyInventoryState,
+    WarehouseDailyInventoryState,
+)
 
 __all__ = [
     "BaseEvent",
     "FinancialImpactSummary",
     "InventoryCountEvent",
+    "InventoryPosition",
     "MarkdownEvent",
+    "NetworkDailyInventoryState",
     "SaleEvent",
     "SimulationEvent",
     "SimulationEventType",
     "SpoilageEvent",
     "StockoutEvent",
+    "StoreDailyInventoryState",
     "StoreDeliveryEvent",
     "StoreTransferEvent",
     "SupplierDelayEvent",
     "SupplierShortShipmentEvent",
+    "WarehouseDailyInventoryState",
     "WarehouseAllocationEvent",
     "WarehouseReceiptEvent",
     "calculate_holding_cost",

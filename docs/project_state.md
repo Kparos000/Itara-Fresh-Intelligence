@@ -56,7 +56,8 @@ The repository is in Phase 2: early simulator and financial-loss foundation.
 Phase 1 is substantially complete. Phase 2 has started and now includes event
 schemas, financial loss formulas, a bounded deterministic baseline day
 simulator, generated SKU catalog integration for the baseline simulator, a
-daily financial impact summarizer, and a baseline smoke report.
+daily financial impact summarizer, daily inventory state contracts, and a
+baseline smoke report.
 
 The repository does not yet contain the full four-year simulator, a real
 inventory state transition engine, demand forecasting, risk detection,
@@ -123,6 +124,8 @@ Implemented Phase 2 foundation:
 - baseline simulator SKU selection from the generated 500-SKU catalog
 - event type summarizer
 - daily financial impact summarizer for supported loss event types
+- daily inventory state contracts for positions, store state, warehouse state,
+  and network state
 - bounded multi-day baseline smoke report
 - tests for simulator events, financial formulas, baseline simulation, daily
   impact aggregation, and smoke report output
@@ -148,6 +151,7 @@ Implemented Phase 2 foundation:
   the current baseline smoke simulation.
 - Aggregates supported event types into daily modeled financial impact in
   `impact.py`.
+- Defines daily inventory state contracts in `state.py`.
 - Produces a bounded Markdown smoke report in `reports.py`.
 - Does not yet apply events to inventory state, generate full operating
   streams, run a four-year replay, or compare baseline versus intervention.
@@ -250,6 +254,51 @@ keeps the smoke simulation small while removing disconnected hardcoded sample
 prices and costs. It does not make the current losses realistic yet; realism
 still depends on broader event generation, inventory state transitions, demand
 patterns, and invariant checks.
+
+## Current inventory state capability
+
+The simulator now has daily inventory state contracts in `src/itara/sim/state.py`.
+
+Implemented state contracts:
+
+- `InventoryPosition`: one SKU at one node on one simulation date
+- `StoreDailyInventoryState`: all tracked inventory positions for one store on
+  one date
+- `WarehouseDailyInventoryState`: all tracked inventory positions for one
+  warehouse on one date
+- `NetworkDailyInventoryState`: one warehouse state plus store states for one
+  network date
+
+The contracts support:
+
+- required state date
+- store, warehouse, or node identity
+- SKU identity
+- on-hand units
+- reserved units
+- available units
+- expired units
+- near-expiry units
+- unit cost
+- unit retail price
+- optional days of cover
+
+Validation currently enforces non-negative units and financial values,
+non-negative days of cover when present, available units not exceeding on-hand
+units, and date/node consistency inside store, warehouse, and network daily
+state objects.
+
+The state contracts include aggregate helpers for total on-hand units, total
+available units, and total expired units. They do not yet apply events to state
+or produce inventory transitions.
+
+State is required before realistic simulation, forecasting, decisions, and RL
+because events alone only describe what happened. The system also needs a
+validated picture of what inventory exists after events before it can forecast
+from inventory history, detect stockout or spoilage risk, allocate warehouse
+inventory, verify transfer eligibility, trigger network procurement, calculate
+credible modeled losses, or train a contextual-bandit advisor without bypassing
+deterministic constraints.
 
 ## Current financial calculation capability
 
@@ -359,23 +408,22 @@ CQL remain optional research extensions, not launch requirements.
 
 Recommended near-term sequence:
 
-1. Add a deterministic daily simulator state model.
-2. Apply sale, spoilage, markdown, receipt, allocation, delivery, and transfer
+1. Apply sale, spoilage, markdown, receipt, allocation, delivery, and transfer
    events to inventory state transitions.
-3. Add invariant checks for non-negative inventory, event consistency, and
+2. Add invariant checks for non-negative inventory, event consistency, and
    freshness constraints.
-4. Expand the baseline generator from the tiny smoke sample to a bounded
+3. Expand the baseline generator from the tiny smoke sample to a bounded
    multi-store, multi-SKU window.
-5. Generate warehouse receipt, allocation, store delivery, supplier delay, and
+4. Generate warehouse receipt, allocation, store delivery, supplier delay, and
    supplier short-shipment events in controlled baseline flows.
-6. Aggregate daily financial impact from generated event streams.
-7. Write bounded baseline reports from generated simulation output.
-8. Add realism checks before scaling toward four years.
-9. Build forecasting tables and simple baseline forecasts.
-10. Add risk detection.
-11. Build warehouse-first allocation logic.
-12. Add transfer eligibility and network procurement logic.
-13. Introduce API, RAG, and agent tooling only after the deterministic
+5. Aggregate daily financial impact from generated event streams.
+6. Write bounded baseline reports from generated simulation output.
+7. Add realism checks before scaling toward four years.
+8. Build forecasting tables and simple baseline forecasts.
+9. Add risk detection.
+10. Build warehouse-first allocation logic.
+11. Add transfer eligibility and network procurement logic.
+12. Introduce API, RAG, and agent tooling only after the deterministic
     simulator and decision baseline are tested.
 
 Do not create huge generated datasets yet. Keep samples small and deterministic
@@ -388,6 +436,7 @@ This section was generated from the repository before this report was committed.
 Latest `git log --oneline -10`:
 
 ```text
+bf42e02 Connect baseline simulator to SKU catalog
 0ebc2a8 Add living project state report
 6033e7c Add baseline simulation smoke report
 c7eed49 Summarize daily financial impact from events
@@ -398,13 +447,12 @@ e16f6bb Restore project operating guide
 7c38af1 Document Phase 1 visualizer checkpoint
 0e5cd4a Add transfer exception route overlay
 8ab407a Add supplier inbound route overlay
-560ee02 Add operational flow summary to visualizer
 ```
 
 Latest pytest result observed while preparing this report:
 
 ```text
-98 passed
+114 passed
 ```
 
 Latest Phase 1 validation summary:
