@@ -57,7 +57,8 @@ Phase 1 is substantially complete. Phase 2 has started and now includes event
 schemas, financial loss formulas, a bounded deterministic baseline day
 simulator, generated SKU catalog integration for the baseline simulator, a
 daily financial impact summarizer, daily inventory state contracts, and a
-baseline smoke report.
+small event-to-inventory-state transition skeleton, and a baseline smoke
+report.
 
 The repository does not yet contain the full four-year simulator, a real
 inventory state transition engine, demand forecasting, risk detection,
@@ -126,6 +127,8 @@ Implemented Phase 2 foundation:
 - daily financial impact summarizer for supported loss event types
 - daily inventory state contracts for positions, store state, warehouse state,
   and network state
+- small transition skeleton for applying selected events to daily inventory
+  state
 - bounded multi-day baseline smoke report
 - tests for simulator events, financial formulas, baseline simulation, daily
   impact aggregation, and smoke report output
@@ -152,9 +155,12 @@ Implemented Phase 2 foundation:
 - Aggregates supported event types into daily modeled financial impact in
   `impact.py`.
 - Defines daily inventory state contracts in `state.py`.
+- Applies a small supported set of events to daily inventory state in
+  `transitions.py`.
 - Produces a bounded Markdown smoke report in `reports.py`.
-- Does not yet apply events to inventory state, generate full operating
-  streams, run a four-year replay, or compare baseline versus intervention.
+- Does not yet apply all event types to inventory state, generate full
+  operating streams, run a four-year replay, or compare baseline versus
+  intervention.
 
 `src/itara/rag/`
 
@@ -289,8 +295,49 @@ units, and date/node consistency inside store, warehouse, and network daily
 state objects.
 
 The state contracts include aggregate helpers for total on-hand units, total
-available units, and total expired units. They do not yet apply events to state
-or produce inventory transitions.
+available units, and total expired units.
+
+## Current transition capability
+
+The simulator now has a small transition skeleton in
+`src/itara/sim/transitions.py`.
+
+Implemented transition functions:
+
+- `apply_event_to_state(state, event)`
+- `apply_events_to_state(initial_state, events)`
+
+Supported event transitions:
+
+- `SaleEvent`: reduces store `on_hand_units` and `available_units`
+- `SpoilageEvent`: reduces `on_hand_units` and `available_units`, and
+  increases `expired_units`
+- `InventoryCountEvent`: sets observed `on_hand_units` and clamps
+  `available_units` so it does not exceed on-hand inventory
+
+Current invariant checks:
+
+- event date must match state date
+- transitions must not make `on_hand_units` negative
+- transitions must not make `available_units` negative
+- resulting state is revalidated through the inventory state contracts, which
+  enforce `available_units <= on_hand_units`
+
+Unsupported event transitions currently raise `NotImplementedError` by design
+so missing semantics remain visible. Unsupported events include:
+
+- `WarehouseReceiptEvent`
+- `WarehouseAllocationEvent`
+- `StoreDeliveryEvent`
+- `MarkdownEvent`
+- `StoreTransferEvent`
+- `SupplierDelayEvent`
+- `SupplierShortShipmentEvent`
+
+This is not a full state transition engine yet. It proves that the event
+stream can update daily inventory state for a small tested subset before the
+project expands to warehouse movement, transfers, procurement, and generated
+multi-day replay.
 
 State is required before realistic simulation, forecasting, decisions, and RL
 because events alone only describe what happened. The system also needs a
@@ -358,7 +405,7 @@ baseline-versus-intervention report, or evidence of savings.
 The following are planned but not implemented:
 
 - full deterministic event generator across the network
-- daily inventory state transition engine
+- full daily inventory state transition engine
 - batch-level freshness and expiry transitions
 - warehouse receipt generation from supplier schedules
 - warehouse allocation and delivery state transitions
@@ -408,9 +455,9 @@ CQL remain optional research extensions, not launch requirements.
 
 Recommended near-term sequence:
 
-1. Apply sale, spoilage, markdown, receipt, allocation, delivery, and transfer
-   events to inventory state transitions.
-2. Add invariant checks for non-negative inventory, event consistency, and
+1. Extend transition support to warehouse receipt, allocation, delivery,
+   markdown, transfer, supplier delay, and supplier short-shipment events.
+2. Add invariant checks for event consistency, conservation of units, and
    freshness constraints.
 3. Expand the baseline generator from the tiny smoke sample to a bounded
    multi-store, multi-SKU window.
@@ -436,6 +483,7 @@ This section was generated from the repository before this report was committed.
 Latest `git log --oneline -10`:
 
 ```text
+529beda Add daily inventory state contracts
 bf42e02 Connect baseline simulator to SKU catalog
 0ebc2a8 Add living project state report
 6033e7c Add baseline simulation smoke report
@@ -445,14 +493,12 @@ e16f6bb Restore project operating guide
 931d771 Add financial loss calculation foundation
 957a20d Add simulator event schemas
 7c38af1 Document Phase 1 visualizer checkpoint
-0e5cd4a Add transfer exception route overlay
-8ab407a Add supplier inbound route overlay
 ```
 
 Latest pytest result observed while preparing this report:
 
 ```text
-114 passed
+120 passed
 ```
 
 Latest Phase 1 validation summary:

@@ -41,6 +41,7 @@ from itara.sim.state import (
     StoreDailyInventoryState,
     WarehouseDailyInventoryState,
 )
+from itara.sim.transitions import apply_event_to_state, apply_events_to_state
 
 __all__ = [
     "BaseEvent",
@@ -62,6 +63,8 @@ __all__ = [
     "WarehouseDailyInventoryState",
     "WarehouseAllocationEvent",
     "WarehouseReceiptEvent",
+    "apply_event_to_state",
+    "apply_events_to_state",
     "calculate_holding_cost",
     "calculate_markdown_margin_loss",
     "calculate_net_loss",
