@@ -22,6 +22,7 @@ from itara.domain.sku_catalog import (
     ANCHOR_SKU_NAMES,
     CATEGORY_TARGET_COUNTS,
     generate_sku_catalog,
+    load_generated_sku_catalog,
     write_sku_catalog,
 )
 
@@ -45,5 +46,6 @@ __all__ = [
     "Supplier",
     "Warehouse",
     "generate_sku_catalog",
+    "load_generated_sku_catalog",
     "write_sku_catalog",
 ]

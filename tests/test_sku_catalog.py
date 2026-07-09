@@ -7,6 +7,7 @@ from itara.domain import (
     CATEGORY_TARGET_COUNTS,
     ProductCategory,
     generate_sku_catalog,
+    load_generated_sku_catalog,
     write_sku_catalog,
 )
 
@@ -78,3 +79,13 @@ def test_write_sku_catalog_creates_json_artifact(tmp_path: Path) -> None:
 
     assert written_path.exists()
     assert written_path == output_path
+
+
+def test_load_generated_sku_catalog_loads_json_artifact() -> None:
+    skus = load_generated_sku_catalog()
+
+    assert len(skus) == 500
+    assert skus[0].sku_id == "sku_0001"
+    assert skus[0].unit_retail_price == 1.99
+    assert skus[0].unit_cost == 1.23
+    assert skus[0].gross_margin_pct == 0.38

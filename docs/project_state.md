@@ -55,7 +55,8 @@ The repository is in Phase 2: early simulator and financial-loss foundation.
 
 Phase 1 is substantially complete. Phase 2 has started and now includes event
 schemas, financial loss formulas, a bounded deterministic baseline day
-simulator, a daily financial impact summarizer, and a baseline smoke report.
+simulator, generated SKU catalog integration for the baseline simulator, a
+daily financial impact summarizer, and a baseline smoke report.
 
 The repository does not yet contain the full four-year simulator, a real
 inventory state transition engine, demand forecasting, risk detection,
@@ -118,6 +119,8 @@ Implemented Phase 2 foundation:
 - immutable `FinancialImpactSummary` contract that validates net loss equals
   the sum of its components
 - small deterministic baseline day simulator
+- generated SKU catalog loader for simulation use
+- baseline simulator SKU selection from the generated 500-SKU catalog
 - event type summarizer
 - daily financial impact summarizer for supported loss event types
 - bounded multi-day baseline smoke report
@@ -141,6 +144,8 @@ Implemented Phase 2 foundation:
 - Defines pure financial formulas and `FinancialImpactSummary` in
   `financials.py`.
 - Provides a small deterministic baseline event stream in `baseline.py`.
+- Loads the generated SKU catalog and uses a deterministic two-SKU slice for
+  the current baseline smoke simulation.
 - Aggregates supported event types into daily modeled financial impact in
   `impact.py`.
 - Produces a bounded Markdown smoke report in `reports.py`.
@@ -161,6 +166,13 @@ Implemented Phase 2 foundation:
 - Includes receiving windows, store personas, supplier lead times, delivery
   days, reliability assumptions, emergency delivery fields, warehouse dispatch
   settings, category capacity, and transfer cost assumptions.
+
+`data/generated/sku_catalog.json`
+
+- Stores the generated 500-SKU catalog artifact used by the current baseline
+  simulator.
+- Gives simulator events catalog-backed SKU IDs, unit costs, retail prices, and
+  margins instead of disconnected sample values.
 
 `data/policies/`
 
@@ -211,10 +223,13 @@ for one simulated day through `simulate_baseline_day`.
 Current scope:
 
 - fixed stores: `store_001` and `store_004`
-- fixed SKUs: `sku_0001` and `sku_0002`
+- deterministic SKU slice loaded from the generated 500-SKU catalog:
+  `sku_0001` and `sku_0002`
 - fixed warehouse: `warehouse_001`
 - deterministic random values when a seed is provided
 - stable event IDs derived from simulation date and sequence
+- catalog-backed unit cost and unit retail price values for sale, stockout,
+  spoilage, and markdown events where those fields apply
 - generated event types: sales, one stockout, one spoilage event, one markdown,
   and inventory counts for the two stores and the warehouse
 - deterministic event count by type for the default day:
@@ -228,6 +243,13 @@ This is a smoke-test simulator foundation. It is not the full operations
 simulator and does not yet model real inventory movement, expiry by batch,
 warehouse receipts, allocation state, delivery execution, supplier variability,
 or four-year replay.
+
+Catalog integration matters because simulated losses now use product values
+from the same generated SKU artifact that represents the operating world. This
+keeps the smoke simulation small while removing disconnected hardcoded sample
+prices and costs. It does not make the current losses realistic yet; realism
+still depends on broader event generation, inventory state transitions, demand
+patterns, and invariant checks.
 
 ## Current financial calculation capability
 
@@ -366,6 +388,7 @@ This section was generated from the repository before this report was committed.
 Latest `git log --oneline -10`:
 
 ```text
+0ebc2a8 Add living project state report
 6033e7c Add baseline simulation smoke report
 c7eed49 Summarize daily financial impact from events
 05be30b Add baseline daily simulator skeleton
@@ -381,7 +404,7 @@ e16f6bb Restore project operating guide
 Latest pytest result observed while preparing this report:
 
 ```text
-94 passed
+98 passed
 ```
 
 Latest Phase 1 validation summary:

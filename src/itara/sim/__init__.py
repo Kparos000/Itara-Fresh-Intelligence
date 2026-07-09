@@ -1,6 +1,10 @@
 """Simulation contracts for Itara Fresh Intelligence."""
 
-from itara.sim.baseline import simulate_baseline_day, summarize_events_by_type
+from itara.sim.baseline import (
+    load_baseline_simulation_skus,
+    simulate_baseline_day,
+    summarize_events_by_type,
+)
 from itara.sim.events import (
     BaseEvent,
     InventoryCountEvent,
@@ -54,6 +58,7 @@ __all__ = [
     "calculate_spoilage_loss",
     "calculate_stockout_lost_margin",
     "calculate_transfer_cost",
+    "load_baseline_simulation_skus",
     "run_baseline_smoke_report",
     "simulate_baseline_day",
     "summarize_daily_financial_impact",

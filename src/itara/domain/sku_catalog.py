@@ -294,6 +294,34 @@ def generate_sku_catalog() -> tuple[SKU, ...]:
     return tuple(skus)
 
 
+def load_generated_sku_catalog(path: Path | None = None) -> tuple[SKU, ...]:
+    """Load the generated SKU catalog JSON artifact for simulation use."""
+    target_path = path or generated_data_dir() / "sku_catalog.json"
+    if not target_path.exists():
+        msg = f"Generated SKU catalog does not exist: {target_path}"
+        raise FileNotFoundError(msg)
+
+    with target_path.open(encoding="utf-8") as file:
+        payload: object = json.load(file)
+
+    if not isinstance(payload, list):
+        msg = f"Generated SKU catalog must contain a JSON list: {target_path}"
+        raise ValueError(msg)
+
+    skus: list[SKU] = []
+    for index, item in enumerate(payload):
+        if not isinstance(item, dict):
+            msg = f"Generated SKU catalog row {index} must be a JSON object"
+            raise ValueError(msg)
+        skus.append(SKU.model_validate(item))
+
+    if not skus:
+        msg = f"Generated SKU catalog is empty: {target_path}"
+        raise ValueError(msg)
+
+    return tuple(skus)
+
+
 def write_sku_catalog(output_path: Path | None = None) -> Path:
     """Write the deterministic SKU catalog to JSON."""
     target_path = output_path or generated_data_dir() / "sku_catalog.json"
