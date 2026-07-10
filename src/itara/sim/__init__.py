@@ -31,6 +31,11 @@ from itara.sim.financials import (
     calculate_transfer_cost,
 )
 from itara.sim.impact import summarize_daily_financial_impact
+from itara.sim.replay import (
+    BaselineReplayResult,
+    DailyReplayResult,
+    run_baseline_replay,
+)
 from itara.sim.reports import (
     run_baseline_smoke_report,
     write_baseline_smoke_report,
@@ -45,6 +50,8 @@ from itara.sim.transitions import apply_event_to_state, apply_events_to_state
 
 __all__ = [
     "BaseEvent",
+    "BaselineReplayResult",
+    "DailyReplayResult",
     "FinancialImpactSummary",
     "InventoryCountEvent",
     "InventoryPosition",
@@ -72,6 +79,7 @@ __all__ = [
     "calculate_stockout_lost_margin",
     "calculate_transfer_cost",
     "load_baseline_simulation_skus",
+    "run_baseline_replay",
     "run_baseline_smoke_report",
     "simulate_baseline_day",
     "summarize_daily_financial_impact",

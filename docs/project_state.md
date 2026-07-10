@@ -57,8 +57,8 @@ Phase 1 is substantially complete. Phase 2 has started and now includes event
 schemas, financial loss formulas, a bounded deterministic baseline day
 simulator, generated SKU catalog integration for the baseline simulator, a
 daily financial impact summarizer, daily inventory state contracts, and a
-small event-to-inventory-state transition skeleton, and a baseline smoke
-report.
+small event-to-inventory-state transition skeleton, a bounded baseline replay
+runner, and a baseline smoke report.
 
 The repository does not yet contain the full four-year simulator, a real
 inventory state transition engine, demand forecasting, risk detection,
@@ -129,9 +129,11 @@ Implemented Phase 2 foundation:
   and network state
 - small transition skeleton for applying selected events to daily inventory
   state
+- bounded baseline replay runner that applies replay-safe event transitions
+  across multiple days and returns daily inventory and financial summaries
 - bounded multi-day baseline smoke report
 - tests for simulator events, financial formulas, baseline simulation, daily
-  impact aggregation, and smoke report output
+  impact aggregation, inventory replay, and smoke report output
 
 ## Current backend modules
 
@@ -157,6 +159,7 @@ Implemented Phase 2 foundation:
 - Defines daily inventory state contracts in `state.py`.
 - Applies a small supported set of events to daily inventory state in
   `transitions.py`.
+- Runs a bounded multi-day baseline inventory replay in `replay.py`.
 - Produces a bounded Markdown smoke report in `reports.py`.
 - Does not yet apply all event types to inventory state, generate full
   operating streams, run a four-year replay, or compare baseline versus
@@ -358,6 +361,46 @@ inventory, verify transfer eligibility, trigger network procurement, calculate
 credible modeled losses, or train a contextual-bandit advisor without bypassing
 deterministic constraints.
 
+## Current replay capability
+
+The simulator now has a bounded baseline replay runner in
+`src/itara/sim/replay.py`.
+
+Implemented replay contracts and function:
+
+- `DailyReplayResult`
+- `BaselineReplayResult`
+- `run_baseline_replay(start_date, days=7, seed=42)`
+
+The replay runner currently:
+
+- creates deterministic initial inventory state for the baseline stores,
+  warehouse, and catalog-backed baseline SKUs
+- advances daily inventory state dates while carrying quantities forward
+- runs `simulate_baseline_day` for each simulated day
+- applies replay-safe inventory transitions for physical inventory movement
+  events currently represented in the baseline stream
+- records skipped state-event counts for events that are not yet replay-safe
+  for inventory mutation
+- summarizes daily modeled financial impact with
+  `summarize_daily_financial_impact`
+- returns daily event counts, daily financial impact, daily ending inventory
+  state, and final network inventory state
+
+Current replay limitations:
+
+- the replay is bounded and intended for smoke-level simulator foundation work
+- baseline inventory count events are recorded but not applied as authoritative
+  reconciliation in replay yet, because the current baseline generator is not
+  state-aware and random counts can otherwise make later generated sales
+  impossible
+- stockout and markdown events still affect financial summaries but do not yet
+  mutate inventory state
+- warehouse receipt and store delivery transitions are implemented, but the
+  current baseline generator does not yet emit those events
+- this is not a full four-year simulator, generated operating dataset, or
+  baseline-versus-intervention comparison
+
 ## Current financial calculation capability
 
 The financial layer can calculate:
@@ -419,9 +462,11 @@ The following are planned but not implemented:
 - full daily inventory state transition engine
 - batch-level freshness and expiry transitions
 - warehouse receipt generation from supplier schedules
-- warehouse allocation and delivery state transitions
+- warehouse allocation transitions
+- generated store delivery events in baseline flows
 - supplier delay and short-shipment generation in baseline flows
-- generated multi-day operating datasets beyond the bounded smoke path
+- generated multi-day operating datasets beyond the bounded smoke and replay
+  path
 - four-year 2022-2025 replay
 - annual baseline loss reports
 - counterfactual baseline-versus-intervention reports
@@ -466,22 +511,26 @@ CQL remain optional research extensions, not launch requirements.
 
 Recommended near-term sequence:
 
-1. Extend transition support to warehouse allocation, markdown, transfer,
+1. Make the baseline generator state-aware enough to emit warehouse receipts
+   and store deliveries before daily demand consumes inventory.
+2. Apply inventory count reconciliation semantics once the generator can keep
+   replay state feasible across days.
+3. Extend transition support to warehouse allocation, markdown, transfer,
    supplier delay, and supplier short-shipment events.
-2. Add invariant checks for event consistency, conservation of units, and
+4. Add invariant checks for event consistency, conservation of units, and
    freshness constraints.
-3. Expand the baseline generator from the tiny smoke sample to a bounded
+5. Expand the baseline generator from the tiny smoke sample to a bounded
    multi-store, multi-SKU window.
-4. Generate warehouse receipt, allocation, store delivery, supplier delay, and
+6. Generate warehouse receipt, allocation, store delivery, supplier delay, and
    supplier short-shipment events in controlled baseline flows.
-5. Aggregate daily financial impact from generated event streams.
-6. Write bounded baseline reports from generated simulation output.
-7. Add realism checks before scaling toward four years.
-8. Build forecasting tables and simple baseline forecasts.
-9. Add risk detection.
-10. Build warehouse-first allocation logic.
-11. Add transfer eligibility and network procurement logic.
-12. Introduce API, RAG, and agent tooling only after the deterministic
+7. Aggregate daily financial impact from generated event streams.
+8. Write bounded baseline reports from generated simulation output.
+9. Add realism checks before scaling toward four years.
+10. Build forecasting tables and simple baseline forecasts.
+11. Add risk detection.
+12. Build warehouse-first allocation logic.
+13. Add transfer eligibility and network procurement logic.
+14. Introduce API, RAG, and agent tooling only after the deterministic
     simulator and decision baseline are tested.
 
 Do not create huge generated datasets yet. Keep samples small and deterministic
@@ -494,6 +543,7 @@ This section was generated from the repository before this report was committed.
 Latest `git log --oneline -10`:
 
 ```text
+89b8800 Support warehouse receipt and store delivery transitions
 be3af1a Add inventory state transition skeleton
 529beda Add daily inventory state contracts
 bf42e02 Connect baseline simulator to SKU catalog
@@ -503,13 +553,12 @@ c7eed49 Summarize daily financial impact from events
 05be30b Add baseline daily simulator skeleton
 e16f6bb Restore project operating guide
 931d771 Add financial loss calculation foundation
-957a20d Add simulator event schemas
 ```
 
 Latest pytest result observed while preparing this report:
 
 ```text
-125 passed
+132 passed
 ```
 
 Latest Phase 1 validation summary:
