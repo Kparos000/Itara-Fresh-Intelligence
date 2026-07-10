@@ -1,6 +1,6 @@
 # Itara Fresh Intelligence Project State
 
-Last updated: 2026-07-08
+Last updated: 2026-07-10
 
 This is the living project state report for Itara Fresh Intelligence. It should
 be treated as a practical handoff document for understanding what the
@@ -314,29 +314,40 @@ Supported event transitions:
   increases `expired_units`
 - `InventoryCountEvent`: sets observed `on_hand_units` and clamps
   `available_units` so it does not exceed on-hand inventory
+- `WarehouseReceiptEvent`: increases warehouse `on_hand_units` and
+  `available_units`
+- `StoreDeliveryEvent`: reduces warehouse `on_hand_units` and
+  `available_units`, then increases target store `on_hand_units` and
+  `available_units`
+
+When a warehouse receipt or store delivery references a SKU position that does
+not exist yet, the transition layer creates a new position. Receipt and
+delivery event schemas currently carry unit cost but not retail price, so newly
+created positions use `unit_retail_price=0.0` until those events are enriched
+or the transition layer receives catalog-price context.
 
 Current invariant checks:
 
 - event date must match state date
 - transitions must not make `on_hand_units` negative
 - transitions must not make `available_units` negative
+- store delivery must not make warehouse inventory negative
 - resulting state is revalidated through the inventory state contracts, which
   enforce `available_units <= on_hand_units`
 
 Unsupported event transitions currently raise `NotImplementedError` by design
 so missing semantics remain visible. Unsupported events include:
 
-- `WarehouseReceiptEvent`
 - `WarehouseAllocationEvent`
-- `StoreDeliveryEvent`
 - `MarkdownEvent`
 - `StoreTransferEvent`
 - `SupplierDelayEvent`
 - `SupplierShortShipmentEvent`
 
 This is not a full state transition engine yet. It proves that the event
-stream can update daily inventory state for a small tested subset before the
-project expands to warehouse movement, transfers, procurement, and generated
+stream can update daily inventory state for a small tested subset, including
+basic warehouse inbound and warehouse-to-store movement, before the project
+expands to allocations, markdowns, transfers, procurement, and generated
 multi-day replay.
 
 State is required before realistic simulation, forecasting, decisions, and RL
@@ -455,8 +466,8 @@ CQL remain optional research extensions, not launch requirements.
 
 Recommended near-term sequence:
 
-1. Extend transition support to warehouse receipt, allocation, delivery,
-   markdown, transfer, supplier delay, and supplier short-shipment events.
+1. Extend transition support to warehouse allocation, markdown, transfer,
+   supplier delay, and supplier short-shipment events.
 2. Add invariant checks for event consistency, conservation of units, and
    freshness constraints.
 3. Expand the baseline generator from the tiny smoke sample to a bounded
@@ -483,6 +494,7 @@ This section was generated from the repository before this report was committed.
 Latest `git log --oneline -10`:
 
 ```text
+be3af1a Add inventory state transition skeleton
 529beda Add daily inventory state contracts
 bf42e02 Connect baseline simulator to SKU catalog
 0ebc2a8 Add living project state report
@@ -492,13 +504,12 @@ c7eed49 Summarize daily financial impact from events
 e16f6bb Restore project operating guide
 931d771 Add financial loss calculation foundation
 957a20d Add simulator event schemas
-7c38af1 Document Phase 1 visualizer checkpoint
 ```
 
 Latest pytest result observed while preparing this report:
 
 ```text
-120 passed
+125 passed
 ```
 
 Latest Phase 1 validation summary:

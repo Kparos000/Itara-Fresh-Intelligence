@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from datetime import date
 
 from itara.sim.events import (
     BaseEvent,
     InventoryCountEvent,
     SaleEvent,
     SpoilageEvent,
+    StoreDeliveryEvent,
+    WarehouseReceiptEvent,
 )
 from itara.sim.state import (
     InventoryPosition,
@@ -23,6 +26,35 @@ def _updated_position(position: InventoryPosition, **changes: object) -> Invento
     position_data = position.model_dump()
     position_data.update(changes)
     return InventoryPosition(**position_data)
+
+
+def _new_position_from_inventory_movement(
+    *,
+    event_date: date,
+    node_id: str,
+    sku_id: str,
+    quantity_units: int,
+    unit_cost: float,
+) -> InventoryPosition:
+    """Create a position for movement events when a SKU is not yet tracked.
+
+    Receipt and delivery events do not currently carry retail price. The
+    transition skeleton uses 0.0 until SKU enrichment is added to these events
+    or the transition layer can look up catalog prices directly.
+    """
+    return InventoryPosition(
+        state_date=event_date,
+        node_id=node_id,
+        sku_id=sku_id,
+        on_hand_units=quantity_units,
+        reserved_units=0,
+        available_units=quantity_units,
+        expired_units=0,
+        near_expiry_units=0,
+        unit_cost=unit_cost,
+        unit_retail_price=0.0,
+        days_of_cover=None,
+    )
 
 
 def _apply_sale_to_position(position: InventoryPosition, event: SaleEvent) -> InventoryPosition:
@@ -40,6 +72,52 @@ def _apply_sale_to_position(position: InventoryPosition, event: SaleEvent) -> In
         available_units=position.available_units - event.quantity_units,
         unit_cost=event.unit_cost,
         unit_retail_price=event.unit_retail_price,
+    )
+
+
+def _apply_receipt_to_position(
+    position: InventoryPosition,
+    event: WarehouseReceiptEvent,
+) -> InventoryPosition:
+    """Increase warehouse inventory after supplier receipt."""
+    return _updated_position(
+        position,
+        on_hand_units=position.on_hand_units + event.quantity_units,
+        available_units=position.available_units + event.quantity_units,
+        unit_cost=event.unit_cost,
+    )
+
+
+def _apply_delivery_from_warehouse_position(
+    position: InventoryPosition,
+    event: StoreDeliveryEvent,
+) -> InventoryPosition:
+    """Reduce warehouse inventory after store delivery."""
+    if event.quantity_units > position.on_hand_units:
+        msg = "store delivery quantity would make warehouse on_hand_units negative"
+        raise ValueError(msg)
+    if event.quantity_units > position.available_units:
+        msg = "store delivery quantity would make warehouse available_units negative"
+        raise ValueError(msg)
+
+    return _updated_position(
+        position,
+        on_hand_units=position.on_hand_units - event.quantity_units,
+        available_units=position.available_units - event.quantity_units,
+        unit_cost=event.unit_cost,
+    )
+
+
+def _apply_delivery_to_store_position(
+    position: InventoryPosition,
+    event: StoreDeliveryEvent,
+) -> InventoryPosition:
+    """Increase store inventory after warehouse delivery."""
+    return _updated_position(
+        position,
+        on_hand_units=position.on_hand_units + event.quantity_units,
+        available_units=position.available_units + event.quantity_units,
+        unit_cost=event.unit_cost,
     )
 
 
@@ -76,6 +154,11 @@ def _apply_inventory_count_to_position(
     )
 
 
+def _position_exists(positions: tuple[InventoryPosition, ...], sku_id: str) -> bool:
+    """Return whether a SKU position exists in a positions tuple."""
+    return any(position.sku_id == sku_id for position in positions)
+
+
 def _replace_position(
     positions: tuple[InventoryPosition, ...],
     sku_id: str,
@@ -84,6 +167,21 @@ def _replace_position(
     """Replace one SKU position in an immutable positions tuple."""
     return tuple(
         updated_position if position.sku_id == sku_id else position for position in positions
+    )
+
+
+def _upsert_position(
+    positions: tuple[InventoryPosition, ...],
+    updated_position: InventoryPosition,
+) -> tuple[InventoryPosition, ...]:
+    """Replace an existing SKU position or append it when absent."""
+    if not _position_exists(positions, updated_position.sku_id):
+        return (*positions, updated_position)
+
+    return _replace_position(
+        positions=positions,
+        sku_id=updated_position.sku_id,
+        updated_position=updated_position,
     )
 
 
@@ -99,6 +197,18 @@ def _find_position(
 
     msg = f"No inventory position found for node_id={node_id!r}, sku_id={sku_id!r}"
     raise KeyError(msg)
+
+
+def _find_position_or_none(
+    positions: tuple[InventoryPosition, ...],
+    sku_id: str,
+    node_id: str,
+) -> InventoryPosition | None:
+    """Find an inventory position by node and SKU, returning None when absent."""
+    for position in positions:
+        if position.node_id == node_id and position.sku_id == sku_id:
+            return position
+    return None
 
 
 def _apply_store_event(
@@ -121,17 +231,18 @@ def _apply_store_event(
             StoreDailyInventoryState(
                 state_date=store_state.state_date,
                 store_id=store_state.store_id,
-                positions=_replace_position(
-                    positions=store_state.positions,
-                    sku_id=sku_id,
-                    updated_position=updated_position,
-                ),
+                positions=_upsert_position(store_state.positions, updated_position),
             )
         )
 
     if not matched_store:
-        msg = f"No store state found for store_id={store_id!r}"
-        raise KeyError(msg)
+        store_states.append(
+            StoreDailyInventoryState(
+                state_date=state.state_date,
+                store_id=store_id,
+                positions=(updated_position,),
+            )
+        )
 
     return NetworkDailyInventoryState(
         state_date=state.state_date,
@@ -149,11 +260,7 @@ def _apply_warehouse_event(
     warehouse_state = WarehouseDailyInventoryState(
         state_date=state.warehouse_state.state_date,
         warehouse_id=state.warehouse_state.warehouse_id,
-        positions=_replace_position(
-            positions=state.warehouse_state.positions,
-            sku_id=sku_id,
-            updated_position=updated_position,
-        ),
+        positions=_upsert_position(state.warehouse_state.positions, updated_position),
     )
     return NetworkDailyInventoryState(
         state_date=state.state_date,
@@ -237,6 +344,88 @@ def apply_event_to_state(
             node_id=event.node_id,
             sku_id=event.sku_id,
             updated_position=updated_position,
+        )
+
+    if isinstance(event, WarehouseReceiptEvent):
+        if event.warehouse_id != state.warehouse_state.warehouse_id:
+            msg = "warehouse receipt warehouse_id must match warehouse state"
+            raise ValueError(msg)
+
+        receipt_position = _find_position_or_none(
+            positions=state.warehouse_state.positions,
+            sku_id=event.sku_id,
+            node_id=event.warehouse_id,
+        )
+        updated_position = (
+            _new_position_from_inventory_movement(
+                event_date=event.event_date,
+                node_id=event.warehouse_id,
+                sku_id=event.sku_id,
+                quantity_units=event.quantity_units,
+                unit_cost=event.unit_cost,
+            )
+            if receipt_position is None
+            else _apply_receipt_to_position(receipt_position, event)
+        )
+        return _apply_warehouse_event(
+            state=state,
+            sku_id=event.sku_id,
+            updated_position=updated_position,
+        )
+
+    if isinstance(event, StoreDeliveryEvent):
+        if event.warehouse_id != state.warehouse_state.warehouse_id:
+            msg = "store delivery warehouse_id must match warehouse state"
+            raise ValueError(msg)
+
+        warehouse_position = _find_position(
+            positions=state.warehouse_state.positions,
+            sku_id=event.sku_id,
+            node_id=event.warehouse_id,
+        )
+        updated_warehouse_position = _apply_delivery_from_warehouse_position(
+            warehouse_position,
+            event,
+        )
+        state_after_warehouse = _apply_warehouse_event(
+            state=state,
+            sku_id=event.sku_id,
+            updated_position=updated_warehouse_position,
+        )
+
+        store_state = next(
+            (
+                candidate_store_state
+                for candidate_store_state in state_after_warehouse.store_states
+                if candidate_store_state.store_id == event.store_id
+            ),
+            None,
+        )
+        store_position = (
+            None
+            if store_state is None
+            else _find_position_or_none(
+                positions=store_state.positions,
+                sku_id=event.sku_id,
+                node_id=event.store_id,
+            )
+        )
+        updated_store_position = (
+            _new_position_from_inventory_movement(
+                event_date=event.event_date,
+                node_id=event.store_id,
+                sku_id=event.sku_id,
+                quantity_units=event.quantity_units,
+                unit_cost=event.unit_cost,
+            )
+            if store_position is None
+            else _apply_delivery_to_store_position(store_position, event)
+        )
+        return _apply_store_event(
+            state=state_after_warehouse,
+            store_id=event.store_id,
+            sku_id=event.sku_id,
+            updated_position=updated_store_position,
         )
 
     if isinstance(event, InventoryCountEvent):

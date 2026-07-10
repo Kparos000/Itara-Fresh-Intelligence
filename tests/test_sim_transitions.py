@@ -10,7 +10,9 @@ from itara.sim import (
     SaleEvent,
     SpoilageEvent,
     StoreDailyInventoryState,
+    StoreDeliveryEvent,
     WarehouseDailyInventoryState,
+    WarehouseReceiptEvent,
     apply_event_to_state,
     apply_events_to_state,
 )
@@ -47,7 +49,13 @@ def make_network_state() -> NetworkDailyInventoryState:
         warehouse_state=WarehouseDailyInventoryState(
             state_date=STATE_DATE,
             warehouse_id="warehouse_001",
-            positions=(make_position(node_id="warehouse_001", on_hand_units=100),),
+            positions=(
+                make_position(
+                    node_id="warehouse_001",
+                    on_hand_units=100,
+                    available_units=98,
+                ),
+            ),
         ),
         store_states=(
             StoreDailyInventoryState(
@@ -116,6 +124,139 @@ def test_inventory_count_sets_on_hand_and_clamps_available_units() -> None:
 
     assert position.on_hand_units == 12
     assert position.available_units == 12
+
+
+def test_warehouse_receipt_increases_existing_warehouse_inventory() -> None:
+    state = make_network_state()
+    event = WarehouseReceiptEvent(
+        event_id="receipt-001",
+        event_date=STATE_DATE,
+        created_at=CREATED_AT,
+        warehouse_id="warehouse_001",
+        supplier_id="supplier_001",
+        sku_id="sku_0001",
+        quantity_units=30,
+        unit_cost=1.23,
+    )
+
+    updated_state = apply_event_to_state(state, event)
+    position = updated_state.warehouse_state.positions[0]
+
+    assert position.on_hand_units == 130
+    assert position.available_units == 128
+
+
+def test_warehouse_receipt_creates_missing_warehouse_sku_position() -> None:
+    state = make_network_state()
+    event = WarehouseReceiptEvent(
+        event_id="receipt-002",
+        event_date=STATE_DATE,
+        created_at=CREATED_AT,
+        warehouse_id="warehouse_001",
+        supplier_id="supplier_001",
+        sku_id="sku_0002",
+        quantity_units=24,
+        unit_cost=1.45,
+    )
+
+    updated_state = apply_event_to_state(state, event)
+    position = next(
+        position
+        for position in updated_state.warehouse_state.positions
+        if position.sku_id == "sku_0002"
+    )
+
+    assert position.node_id == "warehouse_001"
+    assert position.on_hand_units == 24
+    assert position.available_units == 24
+    assert position.unit_cost == 1.45
+    assert position.unit_retail_price == 0.0
+
+
+def test_store_delivery_moves_inventory_from_warehouse_to_store() -> None:
+    state = make_network_state()
+    event = StoreDeliveryEvent(
+        event_id="delivery-001",
+        event_date=STATE_DATE,
+        created_at=CREATED_AT,
+        warehouse_id="warehouse_001",
+        store_id="store_001",
+        sku_id="sku_0001",
+        quantity_units=12,
+        unit_cost=1.23,
+    )
+
+    updated_state = apply_event_to_state(state, event)
+    warehouse_position = updated_state.warehouse_state.positions[0]
+    store_position = updated_state.store_states[0].positions[0]
+
+    assert warehouse_position.on_hand_units == 88
+    assert warehouse_position.available_units == 86
+    assert store_position.on_hand_units == 32
+    assert store_position.available_units == 30
+
+
+def test_store_delivery_creates_missing_store_sku_position() -> None:
+    state = apply_event_to_state(
+        make_network_state(),
+        WarehouseReceiptEvent(
+            event_id="receipt-002",
+            event_date=STATE_DATE,
+            created_at=CREATED_AT,
+            warehouse_id="warehouse_001",
+            supplier_id="supplier_001",
+            sku_id="sku_0002",
+            quantity_units=24,
+            unit_cost=1.45,
+        ),
+    )
+    event = StoreDeliveryEvent(
+        event_id="delivery-002",
+        event_date=STATE_DATE,
+        created_at=CREATED_AT,
+        warehouse_id="warehouse_001",
+        store_id="store_001",
+        sku_id="sku_0002",
+        quantity_units=10,
+        unit_cost=1.45,
+    )
+
+    updated_state = apply_event_to_state(state, event)
+    warehouse_position = next(
+        position
+        for position in updated_state.warehouse_state.positions
+        if position.sku_id == "sku_0002"
+    )
+    store_position = next(
+        position
+        for position in updated_state.store_states[0].positions
+        if position.sku_id == "sku_0002"
+    )
+
+    assert warehouse_position.on_hand_units == 14
+    assert warehouse_position.available_units == 14
+    assert store_position.node_id == "store_001"
+    assert store_position.on_hand_units == 10
+    assert store_position.available_units == 10
+    assert store_position.unit_cost == 1.45
+    assert store_position.unit_retail_price == 0.0
+
+
+def test_store_delivery_fails_when_warehouse_inventory_would_go_negative() -> None:
+    state = make_network_state()
+    event = StoreDeliveryEvent(
+        event_id="delivery-001",
+        event_date=STATE_DATE,
+        created_at=CREATED_AT,
+        warehouse_id="warehouse_001",
+        store_id="store_001",
+        sku_id="sku_0001",
+        quantity_units=125,
+        unit_cost=1.23,
+    )
+
+    with pytest.raises(ValueError, match="warehouse on_hand_units"):
+        apply_event_to_state(state, event)
 
 
 def test_negative_inventory_transition_is_rejected() -> None:
