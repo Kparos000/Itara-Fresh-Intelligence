@@ -39,6 +39,7 @@ from itara.sim.replay import (
 from itara.sim.reports import (
     run_baseline_smoke_report,
     write_baseline_smoke_report,
+    write_frontend_simulation_summary,
 )
 from itara.sim.state import (
     InventoryPosition,
@@ -85,4 +86,5 @@ __all__ = [
     "summarize_daily_financial_impact",
     "summarize_events_by_type",
     "write_baseline_smoke_report",
+    "write_frontend_simulation_summary",
 ]

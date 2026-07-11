@@ -16,6 +16,7 @@ dependencies = [
 itara-generate-network-artifacts = "itara.geo.artifacts:main"
 itara-generate-sku-catalog = "itara.domain.sku_catalog:main"
 itara-validate-phase-one = "itara.validation:main"
+itara-write-frontend-simulation-summary = "itara.sim.reports:main"
 
 [project.optional-dependencies]
 dev = [

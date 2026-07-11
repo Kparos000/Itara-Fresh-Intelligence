@@ -1,6 +1,11 @@
+import { BaselineSimulationSummary } from "@/components/baseline-simulation-summary";
 import { MetricCard } from "@/components/metric-card";
 import { NetworkExplorer } from "@/components/network-explorer";
 import { networkNodes, networkSummary } from "@/data/network";
+import {
+  simulationSummary,
+  topSimulationEventCounts,
+} from "@/data/simulation";
 
 export default function Home() {
   return (
@@ -33,6 +38,11 @@ export default function Home() {
             value={networkSummary.max_estimated_drive_minutes.toFixed(0)}
           />
         </div>
+
+        <BaselineSimulationSummary
+          summary={simulationSummary}
+          topEventCounts={topSimulationEventCounts}
+        />
 
         <NetworkExplorer nodes={networkNodes} />
       </section>

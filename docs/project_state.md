@@ -58,7 +58,8 @@ schemas, financial loss formulas, a bounded deterministic baseline day
 simulator, generated SKU catalog integration for the baseline simulator, a
 daily financial impact summarizer, daily inventory state contracts, and a
 small event-to-inventory-state transition skeleton, a bounded baseline replay
-runner, and a baseline smoke report.
+runner, a frontend-readable static simulation summary artifact, and a baseline
+smoke report.
 
 The repository does not yet contain the full four-year simulator, a real
 inventory state transition engine, demand forecasting, risk detection,
@@ -131,9 +132,11 @@ Implemented Phase 2 foundation:
   state
 - bounded baseline replay runner that applies replay-safe event transitions
   across multiple days and returns daily inventory and financial summaries
+- JSON exporter for a small frontend-readable baseline simulation summary
 - bounded multi-day baseline smoke report
 - tests for simulator events, financial formulas, baseline simulation, daily
-  impact aggregation, inventory replay, and smoke report output
+  impact aggregation, inventory replay, frontend summary export, and smoke
+  report output
 
 ## Current backend modules
 
@@ -160,7 +163,8 @@ Implemented Phase 2 foundation:
 - Applies a small supported set of events to daily inventory state in
   `transitions.py`.
 - Runs a bounded multi-day baseline inventory replay in `replay.py`.
-- Produces a bounded Markdown smoke report in `reports.py`.
+- Produces a bounded Markdown smoke report and a static frontend simulation
+  summary JSON artifact in `reports.py`.
 - Does not yet apply all event types to inventory state, generate full
   operating streams, run a four-year replay, or compare baseline versus
   intervention.
@@ -214,13 +218,14 @@ Implemented:
   static transfer exception examples
 - independent toggles for each route overlay
 - metric cards for network summary values
+- compact baseline simulation smoke summary rendered from static JSON
 
 Not implemented in the frontend:
 
 - date-driven network replay
 - SKU-level inventory state
 - simulated daily events on the map
-- financial loss overlays
+- financial loss map overlays or charts
 - forecast or risk overlays
 - generated allocation recommendations
 - policy-verified transfer recommendations
@@ -401,6 +406,41 @@ Current replay limitations:
 - this is not a full four-year simulator, generated operating dataset, or
   baseline-versus-intervention comparison
 
+## Current backend-to-frontend simulation artifact
+
+The backend can now export a small static JSON summary for the Next.js app with
+`write_frontend_simulation_summary`.
+
+Current artifact:
+
+- path: `apps/web/src/data/simulation-summary.json`
+- source: `run_baseline_replay(date(2022, 1, 3), days=7, seed=42)`
+- TypeScript loader: `apps/web/src/data/simulation.ts`
+- UI component: `apps/web/src/components/baseline-simulation-summary.tsx`
+
+The JSON includes:
+
+- simulation start and end dates
+- simulated day count
+- total event count
+- event counts by type
+- total spoilage loss
+- total stockout lost margin
+- total markdown margin loss
+- total transfer cost
+- total holding cost
+- total inference cost
+- total modeled net loss
+- daily modeled net loss values
+
+The UI now shows a compact section titled "Baseline simulation smoke summary"
+above the network visualizer. It displays simulated days, total events,
+modeled net loss, and the top event counts, with an explicit label that this is
+a smoke simulation and not a savings claim.
+
+This is a deployment-minded static artifact path. FastAPI is still planned for
+later; it has not been built yet.
+
 ## Current financial calculation capability
 
 The financial layer can calculate:
@@ -470,6 +510,7 @@ The following are planned but not implemented:
 - four-year 2022-2025 replay
 - annual baseline loss reports
 - counterfactual baseline-versus-intervention reports
+- API-backed simulation summary endpoints
 - demand forecasting
 - forecasting training tables
 - risk detection
@@ -513,24 +554,26 @@ Recommended near-term sequence:
 
 1. Make the baseline generator state-aware enough to emit warehouse receipts
    and store deliveries before daily demand consumes inventory.
-2. Apply inventory count reconciliation semantics once the generator can keep
+2. Add a repeatable artifact-generation workflow for frontend-facing simulator
+   JSON as more summary fields are added.
+3. Apply inventory count reconciliation semantics once the generator can keep
    replay state feasible across days.
-3. Extend transition support to warehouse allocation, markdown, transfer,
+4. Extend transition support to warehouse allocation, markdown, transfer,
    supplier delay, and supplier short-shipment events.
-4. Add invariant checks for event consistency, conservation of units, and
+5. Add invariant checks for event consistency, conservation of units, and
    freshness constraints.
-5. Expand the baseline generator from the tiny smoke sample to a bounded
+6. Expand the baseline generator from the tiny smoke sample to a bounded
    multi-store, multi-SKU window.
-6. Generate warehouse receipt, allocation, store delivery, supplier delay, and
+7. Generate warehouse receipt, allocation, store delivery, supplier delay, and
    supplier short-shipment events in controlled baseline flows.
-7. Aggregate daily financial impact from generated event streams.
-8. Write bounded baseline reports from generated simulation output.
-9. Add realism checks before scaling toward four years.
-10. Build forecasting tables and simple baseline forecasts.
-11. Add risk detection.
-12. Build warehouse-first allocation logic.
-13. Add transfer eligibility and network procurement logic.
-14. Introduce API, RAG, and agent tooling only after the deterministic
+8. Aggregate daily financial impact from generated event streams.
+9. Write bounded baseline reports from generated simulation output.
+10. Add realism checks before scaling toward four years.
+11. Build forecasting tables and simple baseline forecasts.
+12. Add risk detection.
+13. Build warehouse-first allocation logic.
+14. Add transfer eligibility and network procurement logic.
+15. Introduce API, RAG, and agent tooling only after the deterministic
     simulator and decision baseline are tested.
 
 Do not create huge generated datasets yet. Keep samples small and deterministic
@@ -543,6 +586,7 @@ This section was generated from the repository before this report was committed.
 Latest `git log --oneline -10`:
 
 ```text
+bd78baf Add baseline inventory replay runner
 89b8800 Support warehouse receipt and store delivery transitions
 be3af1a Add inventory state transition skeleton
 529beda Add daily inventory state contracts
@@ -552,13 +596,19 @@ bf42e02 Connect baseline simulator to SKU catalog
 c7eed49 Summarize daily financial impact from events
 05be30b Add baseline daily simulator skeleton
 e16f6bb Restore project operating guide
-931d771 Add financial loss calculation foundation
 ```
 
 Latest pytest result observed while preparing this report:
 
 ```text
-132 passed
+133 passed
+```
+
+Latest frontend checks observed while preparing this report:
+
+```text
+npm run lint: passed
+npm run build: passed
 ```
 
 Latest Phase 1 validation summary:
@@ -609,6 +659,13 @@ Print the current baseline smoke report from the repository root:
 ```powershell
 $env:PYTHONPATH = "src"
 python -c "from datetime import date; from itara.sim import run_baseline_smoke_report; print(run_baseline_smoke_report(date(2022, 1, 3), days=7, seed=42))"
+```
+
+Regenerate the frontend simulation summary JSON from the repository root:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -c "from datetime import date; from pathlib import Path; from itara.sim import write_frontend_simulation_summary; write_frontend_simulation_summary(Path('apps/web/src/data/simulation-summary.json'), date(2022, 1, 3), days=7, seed=42)"
 ```
 
 ## Update rule

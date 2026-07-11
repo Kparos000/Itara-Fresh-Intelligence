@@ -1,0 +1,50 @@
+{
+  "daily_net_loss": [
+    {
+      "date": "2022-01-03",
+      "net_loss": 8.379999999999999
+    },
+    {
+      "date": "2022-01-04",
+      "net_loss": 10.54
+    },
+    {
+      "date": "2022-01-05",
+      "net_loss": 7.779999999999999
+    },
+    {
+      "date": "2022-01-06",
+      "net_loss": 8.419999999999998
+    },
+    {
+      "date": "2022-01-07",
+      "net_loss": 12.519999999999998
+    },
+    {
+      "date": "2022-01-08",
+      "net_loss": 11.089999999999998
+    },
+    {
+      "date": "2022-01-09",
+      "net_loss": 13.159999999999998
+    }
+  ],
+  "days": 7,
+  "end_date": "2022-01-09",
+  "event_counts": {
+    "inventory_count": 42,
+    "markdown": 7,
+    "sale": 28,
+    "spoilage": 7,
+    "stockout": 7
+  },
+  "start_date": "2022-01-03",
+  "total_events": 91,
+  "total_holding_cost": 0.0,
+  "total_inference_cost": 0.0,
+  "total_markdown_margin_loss": 23.599999999999994,
+  "total_net_loss": 71.88999999999999,
+  "total_spoilage_loss": 23.37,
+  "total_stockout_lost_margin": 24.919999999999995,
+  "total_transfer_cost": 0.0
+}

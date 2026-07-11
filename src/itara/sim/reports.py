@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from collections import Counter
 from datetime import date, timedelta
 from math import fsum
@@ -9,6 +10,10 @@ from pathlib import Path
 
 from itara.sim.baseline import simulate_baseline_day, summarize_events_by_type
 from itara.sim.impact import summarize_daily_financial_impact
+from itara.sim.replay import BaselineReplayResult, run_baseline_replay
+
+DEFAULT_FRONTEND_SIMULATION_SUMMARY_PATH = Path("apps/web/src/data/simulation-summary.json")
+DEFAULT_BASELINE_SUMMARY_START_DATE = date(2022, 1, 3)
 
 
 def _validate_days(days: int) -> None:
@@ -98,3 +103,73 @@ def write_baseline_smoke_report(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(report, encoding="utf-8")
     return output_path
+
+
+def _frontend_simulation_summary_payload(
+    replay_result: BaselineReplayResult,
+) -> dict[str, object]:
+    """Convert a baseline replay result to a small frontend-readable payload."""
+    event_counts: Counter[str] = Counter()
+    for daily_result in replay_result.daily_results:
+        event_counts.update(daily_result.event_counts)
+
+    daily_impacts = tuple(
+        daily_result.financial_impact for daily_result in replay_result.daily_results
+    )
+
+    return {
+        "start_date": replay_result.start_date.isoformat(),
+        "end_date": replay_result.end_date.isoformat(),
+        "days": replay_result.days,
+        "total_events": sum(event_counts.values()),
+        "event_counts": dict(sorted(event_counts.items())),
+        "total_spoilage_loss": fsum(impact.spoilage_loss for impact in daily_impacts),
+        "total_stockout_lost_margin": fsum(impact.stockout_lost_margin for impact in daily_impacts),
+        "total_markdown_margin_loss": fsum(impact.markdown_margin_loss for impact in daily_impacts),
+        "total_transfer_cost": fsum(impact.transfer_cost for impact in daily_impacts),
+        "total_holding_cost": fsum(impact.holding_cost for impact in daily_impacts),
+        "total_inference_cost": fsum(impact.inference_cost for impact in daily_impacts),
+        "total_net_loss": replay_result.total_modeled_net_loss(),
+        "daily_net_loss": [
+            {
+                "date": daily_result.simulation_date.isoformat(),
+                "net_loss": daily_result.financial_impact.net_loss,
+            }
+            for daily_result in replay_result.daily_results
+        ],
+    }
+
+
+def write_frontend_simulation_summary(
+    output_path: Path,
+    start_date: date,
+    days: int = 7,
+    seed: int = 42,
+) -> Path:
+    """Write a small static baseline replay summary JSON for the frontend."""
+    replay_result = run_baseline_replay(
+        start_date=start_date,
+        days=days,
+        seed=seed,
+    )
+    payload = _frontend_simulation_summary_payload(replay_result)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return output_path
+
+
+def main() -> None:
+    """Write the default frontend simulation summary artifact."""
+    write_frontend_simulation_summary(
+        output_path=DEFAULT_FRONTEND_SIMULATION_SUMMARY_PATH,
+        start_date=DEFAULT_BASELINE_SUMMARY_START_DATE,
+        days=7,
+        seed=42,
+    )
+
+
+if __name__ == "__main__":
+    main()
